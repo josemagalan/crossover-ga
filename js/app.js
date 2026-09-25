@@ -17,7 +17,7 @@
     opSwitch: $('opSwitch'), vizLabel: $('vizLabel'), legend: $('legend'), dragHint: $('dragHint'),
     len: $('len'), lenOut: $('lenOut'), seed: $('seed'),
     variantField: $('variantField'), variant: $('variant'), variantDesc: $('variantDesc'),
-    btnRandom: $('btnRandom'), btnCuts: $('btnCuts'),
+    btnRandom: $('btnRandom'), btnCuts: $('btnCuts'), btnDraw: $('btnDraw'),
     manualForm: $('manualForm'), inP1: $('inP1'), inP2: $('inP2'), err: $('err'),
     btnReset: $('btnReset'), btnPrev: $('btnPrev'), btnPlay: $('btnPlay'), btnNext: $('btnNext'),
     counter: $('stepCounter'), barFill: $('barFill'),
@@ -30,6 +30,7 @@
     view: null,          // 'home' | 'op'
     opId: null,
     variant: null,       // variante del operador, si tiene varias
+    draw: 1,             // semilla del sorteo de las variantes aleatorias (CX)
     n: 8, seed: 0, p1: [], p2: [], cuts: [],
     result: null, step: 0,
     playing: false, speed: 1, errKey: null,
@@ -101,10 +102,11 @@
 
   function recompute(step) {
     stop();
-    state.result = spec().run(state.p1, state.p2, state.cuts, { variant: state.variant });
+    state.result = spec().run(state.p1, state.p2, state.cuts, { variant: state.variant, seed: state.draw });
     view.setProblem({
       p1: state.p1, p2: state.p2, cuts: state.cuts,
       segment: !!spec().segment,
+      links: !!spec().links,
       aux: state.result.aux || null,
     });
     goTo(step || 0, false);
@@ -193,6 +195,7 @@
     mapped: ['sw-mapped', 'legendMapped'],
     conflict: ['sw-conflict', 'legendConflict'],
     segment: ['sw-segment', 'legendSegment'],
+    link: ['sw-link', 'legendLink'],
   };
 
   // Enlace a otro operador de la misma representación con los mismos padres (y cortes, si usa los mismos),
@@ -248,10 +251,13 @@
     renderVariants();
   }
 
+  const usesDraw = () => !!(spec().randomVariants && spec().randomVariants.indexOf(state.variant) !== -1);
+
   function renderVariants() {
     const vs = spec().variants;
     el.variantField.hidden = !vs;
     el.variantDesc.hidden = !vs;
+    el.btnDraw.hidden = true;
     if (!vs) return;
     const meta = G.content[state.opId].variants;
     const l = state.lang;
@@ -263,6 +269,7 @@
     }));
     el.variant.value = state.variant;
     el.variantDesc.textContent = meta[state.variant].desc[l];
+    el.btnDraw.hidden = !usesDraw();
   }
 
   // ---------- Idioma ----------
@@ -311,6 +318,8 @@
     const vs = impl().spec.variants;
     const v = q.get('v');
     state.variant = vs ? (vs.indexOf(v) !== -1 ? v : impl().spec.defaultVariant) : null;
+    const r = parseInt(q.get('r'), 10);
+    state.draw = Number.isFinite(r) && r > 0 ? r % 1000000 : R.newSeed() + 1;
     if (!learn) {
       learn = createLearnPanel({ content: G.content[id], t: (k, p) => t(k, p), lang: () => state.lang });
       learn.setVariant(state.variant);
@@ -320,8 +329,11 @@
     const p1 = (q.get('p1') || '').split('-').filter(Boolean).map(Number);
     const p2 = (q.get('p2') || '').split('-').filter(Boolean).map(Number);
     const cuts = (q.get('c') || '').split('-').filter((x) => x !== '').map(Number);
-    if (p1.length && !impl().validateParents(p1, p2) && validCuts(p1.length, cuts)) {
-      Object.assign(state, { p1, p2, cuts, n: p1.length, seed: Number.isFinite(seed) ? Math.abs(seed) % 1000000 : state.seed });
+    const s0 = Number.isFinite(seed) ? Math.abs(seed) % 1000000 : state.seed;
+    if (p1.length && !impl().validateParents(p1, p2)) {
+      // Padres válidos: se conservan; si los cortes no valen para este operador, se sortean.
+      const okCuts = validCuts(p1.length, cuts) ? cuts : randomCuts(R.mulberry32(s0 + 1), p1.length);
+      Object.assign(state, { p1, p2, cuts: okCuts, n: p1.length, seed: s0 });
     } else {
       generate(Number.isFinite(seed) ? Math.abs(seed) % 1000000 : R.newSeed(), state.n);
     }
@@ -346,6 +358,7 @@
       Object.assign(params, {
         op: state.opId,
         v: state.variant || undefined,
+        r: usesDraw() ? String(state.draw) : undefined,
         p1: state.p1.join('-'),
         p2: state.p2.join('-'),
         c: state.cuts.join('-'),
@@ -353,7 +366,7 @@
         step: String(state.step),
       });
     }
-    const order = ['op', 'lang', 'v', 'p1', 'p2', 'c', 's', 'step'].filter((k) => params[k] != null);
+    const order = ['op', 'lang', 'v', 'r', 'p1', 'p2', 'c', 's', 'step'].filter((k) => params[k] != null && params[k] !== '');
     const h = new URLSearchParams(order.map((k) => [k, params[k]])).toString();
     if (location.hash.replace(/^#/, '') === h) return;
     try { history.replaceState(null, '', `#${h}`); } catch (err) { /* file:// en algunos navegadores */ }
@@ -384,6 +397,10 @@
     generate(R.newSeed(), state.n);
     recompute(0);
   });
+  el.btnDraw.addEventListener('click', () => {
+    state.draw = R.newSeed() + 1;
+    recompute(0);
+  });
   el.btnCuts.addEventListener('click', () => {
     const r = R.mulberry32((Date.now() ^ state.seed) >>> 0);
     let cuts;
@@ -412,6 +429,7 @@
   el.variant.addEventListener('change', () => {
     state.variant = el.variant.value;
     el.variantDesc.textContent = G.content[state.opId].variants[state.variant].desc[state.lang];
+    el.btnDraw.hidden = !usesDraw();
     learn.setVariant(state.variant);
     recompute(state.step);   // mismo paso, para comparar variantes
   });

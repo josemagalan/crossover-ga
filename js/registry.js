@@ -101,8 +101,13 @@
         },
         {
           id: 'cx',
+          ready: true,
           name: { es: 'Cruce CX', en: 'CX crossover' },
           summary: { es: 'Cada gen conserva la posición que tenía en uno de los padres, siguiendo ciclos.', en: 'Each gene keeps the position it had in one of the parents, following cycles.' },
+          subtitle: {
+            es: 'Cycle Crossover: cada gen conserva la posición que tenía en uno de los padres',
+            en: 'Cycle Crossover: every gene keeps the position it had in one of the parents',
+          },
         },
       ],
     },

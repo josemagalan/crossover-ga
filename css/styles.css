@@ -278,7 +278,7 @@ input[type="number"], input[type="text"], select {
   height: 38px;
 }
 input[type="number"] { width: 110px; font-variant-numeric: tabular-nums; }
-select { min-width: 220px; cursor: pointer; }
+select { min-width: 220px; max-width: 100%; cursor: pointer; }
 .variant-desc { margin-top: 10px; max-width: 80ch; }
 a:focus-visible, select:focus-visible, input:focus-visible, button:focus-visible, summary:focus-visible, .handle:focus-visible {
   outline: 3px solid var(--accent);
@@ -413,6 +413,11 @@ summary {
 .ochip.active .ochip-rect { stroke: var(--focus); }
 .ochip-num { text-anchor: middle; font-weight: 700; font-variant-numeric: tabular-nums; }
 .ochip-idx { text-anchor: middle; font-size: 11px; font-weight: 600; fill: var(--muted); font-variant-numeric: tabular-nums; }
+.cycle-rect { stroke: transparent; stroke-width: 3; }
+.cycle.active .cycle-rect { stroke: var(--focus); }
+.cycle-text { text-anchor: middle; font-weight: 700; font-variant-numeric: tabular-nums; }
+.link { fill: none; stroke: var(--ink); stroke-width: 2.5; }
+.link-head { fill: var(--ink); }
 .slot-num { text-anchor: middle; font-weight: 600; fill: var(--muted); font-variant-numeric: tabular-nums; pointer-events: none; }
 
 @keyframes shake {
@@ -506,6 +511,7 @@ summary {
 .sw-mapped { background: repeating-linear-gradient(45deg, var(--p1) 0 5px, color-mix(in srgb, var(--p1) 45%, white) 5px 9px); }
 .sw-conflict { border: 4px solid var(--conflict); }
 .sw-segment { background: var(--band); border: 2px dashed var(--ink); }
+.sw-link { width: 24px; height: 12px; border-radius: 0; border-bottom: 3px solid var(--ink); border-right: 3px solid var(--ink); transform: skewX(-20deg); }
 
 /* Para saber más */
 .learn { padding-top: 16px; }
@@ -633,6 +639,8 @@ summary {
   .narration p { font-size: 1.02rem; }
   .drag-hint { text-align: left; }
   .manual-grid { grid-template-columns: 1fr; }
+  #variantField { flex: 1 1 100%; min-width: 0; }
+  #variantField select { width: 100%; min-width: 0; }
   .code-actions { margin-left: 0; width: 100%; }
   .code-actions .btn { flex: 1 1 auto; white-space: normal; }
   .copy-status { order: 3; }

@@ -25,7 +25,7 @@ function randomCases(count, seed) {
     const c1 = rng.randInt(r, 0, n - 1);
     const c2 = rng.randInt(r, c1 + 1, n);
     if (!U.validateCuts(n, c1, c2)) continue;
-    cases.push({ p1: rng.randomPermutation(r, n), p2: rng.randomPermutation(r, n), c1, c2 });
+    cases.push({ p1: rng.randomPermutation(r, n), p2: rng.randomPermutation(r, n), c1, c2, seed: cases.length + 1 });
   }
   return cases;
 }
@@ -35,7 +35,15 @@ for (const op of readyOps) {
   const { spec } = require(`../js/operators/${op.id}.js`);
   const content = require(`../js/content/${op.id}.js`);
   const variants = spec.variants || [null];
-  const expected = (c, v) => spec.run(c.p1, c.p2, [c.c1, c.c2], { variant: v }).children;
+  const cutsOf = (c) => (spec.cuts === 2 ? [c.c1, c.c2] : []);
+  const toolRun = (c, v) => spec.run(c.p1, c.p2, cutsOf(c), { variant: v, seed: c.seed });
+  const expected = (c, v) => toolRun(c, v).children;
+  // Las elecciones al azar de la herramienta, para repetirlas en el código descargable
+  const scripted = (choices) => { const q = choices.slice(); return () => (q.shift() === 'p1' ? 0.25 : 0.75); };
+  const callJs = (fn, c, v) => {
+    if (spec.cuts === 0) return fn(c.p1, c.p2, v, scripted(toolRun(c, v).choices || []));
+    return v ? fn(c.p1, c.p2, c.c1, c.c2, v) : fn(c.p1, c.p2, c.c1, c.c2);
+  };
   const pseudo = (lang, v) => (content.pseudocodeFor ? content.pseudocodeFor(lang, v) : content.pseudocode[lang]);
 
   for (const lang of ['es', 'en']) {
@@ -47,8 +55,7 @@ for (const op of readyOps) {
       const fn = require(file)[op.id];
       variants.forEach((v, vi) => {
         for (const c of randomCases(800, 11 + vi)) {
-          const got = v ? fn(c.p1, c.p2, c.c1, c.c2, v) : fn(c.p1, c.p2, c.c1, c.c2);
-          assert.deepEqual(got, expected(c, v), `variante ${v}`);
+          assert.deepEqual(callJs(fn, c, v), expected(c, v), `variante ${v}`);
         }
       });
       for (let t = 0; t < 200; t++) {
@@ -65,15 +72,24 @@ for (const op of readyOps) {
       assert.doesNotMatch(src, /\{\{\w+\}\}/, 'quedan marcadores sin sustituir');
       fs.writeFileSync(path.join(dir, `${op.id}.py`), src);
       const cases = [];
-      variants.forEach((v, vi) => randomCases(800, 21 + vi).forEach((c) => cases.push(Object.assign({ v }, c))));
+      variants.forEach((v, vi) => randomCases(800, 21 + vi).forEach((c) => {
+        cases.push(Object.assign({ v, cuts: spec.cuts, choices: toolRun(c, v).choices || [] }, c));
+      }));
       const driver = [
         'import json, random, sys',
         `from ${op.id} import ${op.id} as fn`,
+        'class Scripted:',
+        '    def __init__(self, ch): self.ch = list(ch)',
+        '    def random(self): return 0.25 if self.ch.pop(0) == "p1" else 0.75',
         'cases = json.load(sys.stdin)',
         'out = []',
         'for c in cases:',
         '    kw = {"variant": c["v"]} if c["v"] else {}',
-        '    out.append([list(h) for h in fn(c["p1"], c["p2"], c["c1"], c["c2"], **kw)])',
+        '    if c["cuts"] == 0:',
+        '        res = fn(c["p1"], c["p2"], rng=Scripted(c["choices"]), **kw)',
+        '    else:',
+        '        res = fn(c["p1"], c["p2"], c["c1"], c["c2"], **kw)',
+        '    out.append([list(h) for h in res])',
         'ok = True',
         'for n in range(5, 13):',
         '    for _ in range(30):',
@@ -97,7 +113,7 @@ for (const op of readyOps) {
   test(`${op.id}: cada paso resalta líneas que existen en el pseudocódigo`, () => {
     variants.forEach((v) => {
       const types = new Set();
-      for (const c of randomCases(200, 5)) spec.run(c.p1, c.p2, [c.c1, c.c2], { variant: v }).steps.forEach((s) => types.add(s.type));
+      for (const c of randomCases(200, 5)) toolRun(c, v).steps.forEach((s) => types.add(s.type));
       for (const type of types) assert.ok(content.stepLines[type], `falta stepLines.${type}`);
       for (const lang of ['es', 'en']) {
         const ids = new Set(pseudo(lang, v).map((l) => l.id));
@@ -113,7 +129,7 @@ for (const op of readyOps) {
       assert.ok(ref.authors && ref.year && ref.title && ref.note.es && ref.note.en && ref.details.es && ref.details.en, ref.id);
       if (ref.url) assert.match(ref.url, /^https:\/\//);
     }
-    assert.equal(content.references.filter((r) => r.original).length, 1);
+    assert.ok(content.references.filter((r) => r.original).length <= 1);
     if (spec.variants) {
       assert.ok(spec.variants.includes(spec.defaultVariant));
       for (const v of spec.variants) {

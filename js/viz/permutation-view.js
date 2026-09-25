@@ -54,6 +54,42 @@
       },
     },
 
+    // CX: ciclos encontrados hasta ahora, con el padre del que los toma el Hijo 1.
+    cycles: {
+      caption: 'cycleList',
+      draw() {},
+      show(g, step, items, geo, label) {
+        const cycles = step.auxCycles || [];
+        const h = geo.auxSq;
+        const fs = Math.round(h * 0.46);
+        const charW = fs * 0.62;
+        const data = cycles.map((c, k) => {
+          const text = `${label('cycleShort', { k: k + 1 })} · ${c.positions.map((i) => i + 1).join(' → ')}`;
+          return { k, src: c.src, text, w: Math.round(text.length * charW + 24) };
+        });
+        const gap = 12;
+        const total = data.reduce((a, d) => a + d.w, 0) + gap * Math.max(0, data.length - 1);
+        let x = geo.x0 + (geo.cell * geo.n - total) / 2;
+        data.forEach((d) => { d.x = x; x += d.w + gap; });
+        const act = step.auxActive || [];
+        const groups = g.selectAll('g.cycle')
+          .data(data, (d) => d.k)
+          .join((enter) => {
+            const c = enter.append('g').attr('class', 'cycle');
+            c.append('rect').attr('class', 'cycle-rect');
+            c.append('text').attr('class', 'cycle-text');
+            return c;
+          });
+        groups.attr('transform', (d) => `translate(${d.x},${geo.yAux})`)
+          .classed('active', (d) => act.indexOf(d.k) !== -1);
+        groups.select('.cycle-rect').attr('width', (d) => d.w).attr('height', h).attr('rx', h / 2)
+          .style('fill', (d) => `var(--${d.src})`);
+        groups.select('.cycle-text').attr('class', (d) => `cycle-text ink-${d.src}`)
+          .attr('x', (d) => d.w / 2).attr('y', h / 2).attr('dy', '0.36em').style('font-size', `${fs}px`)
+          .text((d) => d.text);
+      },
+    },
+
     // OX: lista ordenada de los genes que faltan en el hijo que se está construyendo.
     order: {
       caption: 'orderList',
@@ -110,6 +146,12 @@
       pat.append('rect').attr('width', 4).attr('height', 9).attr('class', 'hatch-stripe');
     });
 
+    defs.append('marker')
+      .attr('id', 'arrowhead')
+      .attr('viewBox', '0 0 10 10').attr('refX', 8).attr('refY', 5)
+      .attr('markerWidth', 7).attr('markerHeight', 7).attr('orient', 'auto-start-reverse')
+      .append('path').attr('d', 'M0,0 L10,5 L0,10 z').attr('class', 'link-head');
+
     const gBands = svg.append('g').attr('class', 'bands');
     const gLabels = svg.append('g').attr('class', 'labels');
     const gIdx = svg.append('g').attr('class', 'indices');
@@ -119,10 +161,11 @@
     const gParents = svg.append('g').attr('class', 'parents');
     const gChildren = svg.append('g').attr('class', 'children');
     const gAux = svg.append('g').attr('class', 'aux');
+    const gLinks = svg.append('g').attr('class', 'links');
     const gGhost = svg.append('g').attr('class', 'ghosts');
     const gHandles = svg.append('g').attr('class', 'handles');
 
-    function layout(n, hasAux) {
+    function layout(n, hasAux, linkSpace) {
       const compact = svgEl.clientWidth > 0 && svgEl.clientWidth < 640;
       const left = compact ? 44 : 128;
       const right = compact ? 8 : 16;
@@ -136,7 +179,7 @@
       const yIdx = 44;
       const gap = 14;
       const yP1 = 58;
-      const yP2 = yP1 + s + gap;
+      const yP2 = yP1 + s + (linkSpace ? Math.max(40, Math.round(s * 0.7)) : gap);
       const yAux = yP2 + s + 52;
       const auxSq = Math.round(Math.min(34, s * 0.62));
       const yC1 = hasAux ? yAux + auxSq + 36 : yP2 + s + 44;
@@ -176,7 +219,7 @@
       const sizeChanged = !geo || geo.n !== np.p1.length;
       const auxChanged = !problem || (problem.aux && problem.aux.type) !== (np.aux && np.aux.type);
       problem = np;
-      geo = layout(np.p1.length, !!np.aux);
+      geo = layout(np.p1.length, !!np.aux, !!np.links);
       svg.attr('viewBox', `0 0 ${geo.W} ${geo.H}`);
       if (sizeChanged) {
         gParents.selectAll('*').remove();
@@ -359,6 +402,25 @@
         .classed('active', (d) => has(step.highlight, d.row, d.pos))
         .classed('conflict', (d) => has(step.conflict, d.row, d.pos));
 
+      // Flechas entre padres: dónde está el mismo gen en el otro padre (CX)
+      const linkPath = (l) => {
+        const [r1, i1] = l.from;
+        const [r2, i2] = l.to;
+        const x1 = geneX(i1) + geo.s / 2;
+        const x2 = geneX(i2) + geo.s / 2;
+        const down = geo.rowY[r1] < geo.rowY[r2];
+        const y1 = down ? geo.rowY[r1] + geo.s : geo.rowY[r1];
+        const y2 = down ? geo.rowY[r2] - 4 : geo.rowY[r2] + geo.s + 4;
+        const mid = (y1 + y2) / 2;
+        return `M${x1},${y1} C${x1},${mid} ${x2},${mid} ${x2},${y2}`;
+      };
+      gLinks.selectAll('path.link')
+        .data(step.links || [], (l) => `${l.from.join()}-${l.to.join()}`)
+        .join('path')
+        .attr('class', 'link')
+        .attr('marker-end', 'url(#arrowhead)')
+        .attr('d', linkPath);
+
       // Orden de relleno de los huecos (números dentro de los huecos todavía vacíos)
       const nums = [];
       Object.keys(step.slotOrder || {}).forEach((row) => {
@@ -380,7 +442,7 @@
       if (problem.aux) {
         const A = AUX[problem.aux.type];
         if (A.captionParams) caption.text(label(A.caption, A.captionParams(step)));
-        A.show(gAux, step, problem.aux.items, geo);
+        A.show(gAux, step, problem.aux.items, geo, label);
       }
 
       // Animación: el gen "vuela" desde el padre hasta su hueco en el hijo
