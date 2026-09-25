@@ -66,15 +66,25 @@
         es: 'Cada gen es un número real. Es la representación natural cuando las variables del problema son continuas.',
         en: 'Each gene is a real number. It is the natural representation when the problem variables are continuous.',
       },
-      sample: ['0.42', '1.70', '−0.35', '2.10'],
+      sample: ['4.2', '1.7', '8.5', '2.1'],
       operators: [
         {
           id: 'uniform-real',
+          ready: true,
+          subtitle: {
+            es: 'Cruce uniforme: cada gen viene tal cual de uno de los dos padres',
+            en: 'Uniform crossover: each gene comes unchanged from one of the two parents',
+          },
           name: { es: 'Cruce uniforme', en: 'Uniform crossover' },
           summary: { es: 'Cada gen se copia tal cual de uno de los dos padres, al azar.', en: 'Each gene is copied unchanged from one of the two parents, at random.' },
         },
         {
           id: 'arithmetic',
+          ready: true,
+          subtitle: {
+            es: 'Cruce aritmético: cada gen del hijo es una media ponderada de los padres',
+            en: 'Arithmetic crossover: each child gene is a weighted average of the parents',
+          },
           name: { es: 'Cruce aritmético', en: 'Arithmetic crossover' },
           summary: { es: 'Los hijos son combinaciones lineales de los padres, con un peso λ.', en: 'The children are linear combinations of the parents, with weight λ.' },
         },

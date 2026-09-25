@@ -41,11 +41,20 @@
   let timer = null;
   let learn = null;
 
-  // Los números no enteros se muestran con dos decimales y la coma o el punto del idioma.
+  // Los números no enteros se muestran con uno o dos decimales y la coma o el punto del idioma.
+  const locale = () => (state.lang === 'es' ? 'es-ES' : 'en-GB');
   const fmtValue = (v) => (typeof v === 'number' && !Number.isInteger(v)
-    ? v.toLocaleString(state.lang === 'es' ? 'es-ES' : 'en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    ? v.toLocaleString(locale(), { minimumFractionDigits: 1, maximumFractionDigits: 2 })
     : v);
-  const fill = (s, params) => (params ? s.replace(/\{(\w+)\}/g, (m, p) => (params[p] != null ? fmtValue(params[p]) : m)) : s);
+  // Genes: en la representación real, siempre con decimales (5,0 y no 5), para distinguirlos de las otras.
+  const fmtGene = (v) => (repId() === 'real' && typeof v === 'number'
+    ? v.toLocaleString(locale(), { minimumFractionDigits: 1, maximumFractionDigits: 2 })
+    : v);
+  // params.genes: nombres de los parámetros que son valores de genes (se escriben como en la vista).
+  const fill = (s, params) => (params ? s.replace(/\{(\w+)\}/g, (m, p) => {
+    if (params[p] == null) return m;
+    return params.genes && params.genes.indexOf(p) !== -1 ? fmtGene(params[p]) : fmtValue(params[p]);
+  }) : s);
   const t = (key, params) => fill(i18n.t(state.lang, key), params);
 
   // Textos del operador actual (narración, leyenda propia...) con la interfaz general como respaldo.
@@ -107,6 +116,7 @@
 
   const view = createPermutationView($('viz'), {
     label: (key, params) => tOp(key, params),
+    format: (v) => fmtGene(v),
     duration: () => Math.round(750 / state.speed),
     onCutDrag: (i, g) => {
       const c = clampCut(i, g);
@@ -122,6 +132,7 @@
   const GENERATORS = {
     permutation: (r, n) => R.randomPermutation(r, n),
     binary: (r, n) => G.binUtils.randomBits(r, n),
+    real: (r, n) => G.realUtils.randomReals(r, n),
   };
 
   function generate(seed, n) {
@@ -145,6 +156,8 @@
     });
     goTo(step || 0, false);
     syncControls();
+    // Los enlaces a los otros operadores llevan los padres (y cortes) actuales
+    el.opSwitch.querySelectorAll('a.op-chip[data-op]').forEach((a) => { a.href = sameProblemHref(a.dataset.op); });
   }
 
   // ---------- Reproductor ----------
@@ -231,6 +244,7 @@
     segment: ['sw-segment', 'legendSegment'],
     link: ['sw-link', 'legendLink'],
     mask: ['sw-mask', 'legendMask'],
+    blend: ['sw-blend', 'legendBlend'],
   };
 
   // Enlace a otro operador de la misma representación con los mismos padres (y cortes, si usa los mismos),
@@ -259,7 +273,7 @@
       chip.className = 'op-chip' + (current ? ' current' : '') + (op.ready ? '' : ' soon');
       chip.textContent = op.name[l];
       if (current) chip.setAttribute('aria-current', 'page');
-      else if (op.ready) chip.href = sameProblemHref(op.id);
+      else if (op.ready) { chip.dataset.op = op.id; chip.href = sameProblemHref(op.id); }
       else {
         chip.title = t('comingSoon');
         const s = document.createElement('span');
@@ -286,7 +300,12 @@
     renderVariants();
     renderParams();
     el.manualHint.textContent = t(`manualHint_${repId()}`);
-    const ph = repId() === 'binary' ? ['1 1 0 0 1 0 0 1', '0 0 1 0 1 1 0 0'] : ['1 2 3 4 5 6 7 8', '3 7 5 1 6 8 2 4'];
+    const PH = {
+      binary: ['1 1 0 0 1 0 0 1', '0 0 1 0 1 1 0 0'],
+      real: state.lang === 'es' ? ['2,0 4,5 1,0 8,0 6,5 3,0', '6,0 0,5 3,0 9,0 2,5 7,0'] : ['2.0 4.5 1.0 8.0 6.5 3.0', '6.0 0.5 3.0 9.0 2.5 7.0'],
+      permutation: ['1 2 3 4 5 6 7 8', '3 7 5 1 6 8 2 4'],
+    };
+    const ph = PH[repId()];
     el.inP1.placeholder = ph[0];
     el.inP2.placeholder = ph[1];
   }
@@ -361,8 +380,10 @@
     } else if (state.view === 'op') {
       renderOpHeader();
       view.refreshLabels();
+      view.show(view.step, { animate: false });   // genes con la coma o el punto del idioma
       learn.refresh();
       renderNarration();
+      syncControls();
     }
     writeHash();
   }
@@ -390,7 +411,7 @@
     state.variant = vs ? (vs.indexOf(v) !== -1 ? v : impl().spec.defaultVariant) : null;
     state.params = {};
     (impl().spec.params || []).forEach((pr) => {
-      const v = Number(q.get(pr.id));
+      const v = q.has(pr.id) && q.get(pr.id) !== '' ? Number(q.get(pr.id)) : NaN;
       state.params[pr.id] = Number.isFinite(v) && v >= pr.min && v <= pr.max ? v : pr.default;
     });
     const r = parseInt(q.get('r'), 10);
@@ -442,7 +463,8 @@
       });
     }
     if (state.view === 'op') (spec().params || []).forEach((pr) => { params[pr.id] = String(state.params[pr.id]); });
-    const order = ['op', 'lang', 'v', 'r', 'k', 'p', 'p1', 'p2', 'c', 's', 'step'].filter((k) => params[k] != null && params[k] !== '');
+    const paramIds = state.view === 'op' ? (spec().params || []).map((pr) => pr.id) : [];
+    const order = ['op', 'lang', 'v', 'r'].concat(paramIds, ['p1', 'p2', 'c', 's', 'step']).filter((k) => params[k] != null && params[k] !== '');
     const h = new URLSearchParams(order.map((k) => [k, params[k]])).toString();
     if (location.hash.replace(/^#/, '') === h) return;
     try { history.replaceState(null, '', `#${h}`); } catch (err) { /* file:// en algunos navegadores */ }
@@ -454,8 +476,8 @@
     el.len.value = state.n;
     el.lenOut.textContent = state.n;
     el.seed.value = state.seed;
-    el.inP1.value = state.p1.join(' ');
-    el.inP2.value = state.p2.join(' ');
+    el.inP1.value = state.p1.map(fmtGene).join(' ');
+    el.inP2.value = state.p2.map(fmtGene).join(' ');
   }
 
   el.len.addEventListener('input', () => { el.lenOut.textContent = el.len.value; });
@@ -488,8 +510,10 @@
     recompute(1);
   });
 
-  // Lista de números; en binaria también se admite una cadena seguida como 10110.
+  // Lista de números; en binaria también se admite una cadena seguida como 10110 y en real,
+  // la coma decimal (entonces los genes se separan con espacios o punto y coma).
   const parseList = (s) => {
+    if (repId() === 'real') return s.trim().split(/[\s;]+/).filter(Boolean).map((x) => Number(x.replace(',', '.')));
     const tokens = s.trim().split(/[\s,;]+/).filter(Boolean);
     if (repId() === 'binary' && tokens.length === 1 && /^\d{2,}$/.test(tokens[0])) return tokens[0].split('').map(Number);
     return tokens.map(Number);

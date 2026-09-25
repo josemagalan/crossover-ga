@@ -45,7 +45,8 @@
 
         const chromo = node('div', 'chromo');
         chromo.setAttribute('aria-hidden', 'true');
-        rep.sample.forEach((v) => chromo.append(node('span', 'gene-mini', v)));
+        // Decimales con la coma o el punto del idioma
+        rep.sample.forEach((v) => chromo.append(node('span', 'gene-mini', l === 'es' ? v.replace('.', ',') : v)));
 
         const list = node('ul', 'op-list');
         rep.operators.forEach((op) => list.append(opItem(op, l)));

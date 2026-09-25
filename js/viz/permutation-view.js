@@ -82,6 +82,72 @@
       },
     },
 
+    // Representación real (cruce aritmético): en cada columna, una escala vertical común con los
+    // valores de los padres, el segmento que los une y los hijos a medida que se calculan.
+    lerp: {
+      caption: 'lerpCaption',
+      captionShort: 'lerpCaptionShort',   // en pantallas estrechas
+      height: (geo) => Math.round(Math.max(96, Math.min(150, geo.s * 1.9))),
+      draw() {},
+      show(g, step, items, geo, label, fmt) {
+        const h = geo.auxH;
+        const all = items.p1.concat(items.p2);
+        let lo = Math.floor(Math.min.apply(null, all));
+        let hi = Math.ceil(Math.max.apply(null, all));
+        if (hi - lo < 1) hi = lo + 1;
+        const pad = 9;
+        const y = (v) => geo.yAux + pad + (h - 2 * pad) * (1 - (v - lo) / (hi - lo));
+        const cx = (i) => geo.x0 + i * geo.cell + geo.cell / 2;
+        const xL = geo.x0 + (geo.cell - geo.s) / 2;
+        const xR = geo.x0 + geo.cell * geo.n - (geo.cell - geo.s) / 2;
+        const r = Math.max(4, Math.min(7, geo.s * 0.1));
+        const act = step.auxActive || [];
+
+        // Marco con los valores mínimo y máximo de la escala
+        const frame = [{ k: 'hi', v: hi }, { k: 'lo', v: lo }];
+        g.selectAll('line.lerp-grid').data(frame, (d) => d.k).join('line')
+          .attr('class', 'lerp-grid')
+          .attr('x1', xL).attr('x2', xR).attr('y1', (d) => y(d.v)).attr('y2', (d) => y(d.v));
+        g.selectAll('text.lerp-tick').data(frame, (d) => d.k).join('text')
+          .attr('class', 'lerp-tick')
+          .attr('x', xL - 6).attr('y', (d) => y(d.v)).attr('dy', '0.35em')
+          .text((d) => fmt(d.v));
+
+        const cols = items.p1.map((a, i) => {
+          const c1 = step.children[0][i];
+          const c2 = step.children[1][i];
+          return { i, a, b: items.p2[i], c1: c1 ? c1.v : null, c2: c2 ? c2.v : null, w1: c1 ? c1.w : 0.5, w2: c2 ? c2.w : 0.5 };
+        });
+        const groups = g.selectAll('g.lerp-col').data(cols, (d) => d.i)
+          .join((enter) => {
+            const c = enter.append('g').attr('class', 'lerp-col');
+            c.append('line').attr('class', 'lerp-seg');
+            c.append('circle').attr('class', 'lerp-p lerp-p1');
+            c.append('circle').attr('class', 'lerp-p lerp-p2');
+            c.append('rect').attr('class', 'lerp-c lerp-c2');
+            c.append('rect').attr('class', 'lerp-c lerp-c1');
+            return c;
+          });
+        groups.classed('active', (d) => act.indexOf(d.i) !== -1 && act.length < cols.length)
+          .classed('dim', (d) => act.length > 0 && act.length < cols.length && act.indexOf(d.i) === -1);
+        groups.select('.lerp-seg').attr('x1', (d) => cx(d.i)).attr('x2', (d) => cx(d.i))
+          .attr('y1', (d) => y(d.a)).attr('y2', (d) => y(d.b));
+        groups.select('.lerp-p1').attr('cx', (d) => cx(d.i)).attr('cy', (d) => y(d.a)).attr('r', r);
+        groups.select('.lerp-p2').attr('cx', (d) => cx(d.i)).attr('cy', (d) => y(d.b)).attr('r', r);
+        // Hijos: rombos a los lados de la línea (Hijo 1 a la izquierda, Hijo 2 a la derecha)
+        const q = r * 1.25;
+        const place = (sel, key, dx) => sel
+          .attr('width', q * 1.4).attr('height', q * 1.4)
+          .attr('x', (d) => cx(d.i) + dx - q * 0.7).attr('y', (d) => (d[key] == null ? 0 : y(d[key]) - q * 0.7))
+          .attr('transform', (d) => `rotate(45 ${cx(d.i) + dx} ${d[key] == null ? 0 : y(d[key])})`)
+          .classed('shown', (d) => d[key] != null)
+          // mismo color que el gen del hijo, que mezcla los de los padres según su peso
+          .style('fill', (d) => `color-mix(in srgb, var(--p1) ${Math.round(100 * (key === 'c1' ? d.w1 : d.w2))}%, var(--p2))`);
+        place(groups.select('.lerp-c1'), 'c1', -r * 1.9);
+        place(groups.select('.lerp-c2'), 'c2', r * 1.9);
+      },
+    },
+
     // CX: ciclos encontrados hasta ahora, con el padre del que los toma el Hijo 1.
     cycles: {
       caption: 'cycleList',
@@ -185,6 +251,7 @@
   function createPermutationView(svgEl, opts) {
     const svg = d3.select(svgEl);
     const label = opts.label;                 // (key, params) => texto traducido
+    const fmt = opts.format || ((v) => v);   // valor de un gen => texto (decimales según el idioma)
     const duration = opts.duration;           // () => ms de animación
     const onCutDrag = opts.onCutDrag;         // (índice del corte, hueco deseado) => void
 
@@ -223,7 +290,8 @@
     const gGhost = svg.append('g').attr('class', 'ghosts');
     const gHandles = svg.append('g').attr('class', 'handles');
 
-    function layout(n, hasAux, linkSpace) {
+    function layout(n, auxType, linkSpace) {
+      const hasAux = !!auxType;
       const compact = svgEl.clientWidth > 0 && svgEl.clientWidth < 640;
       const left = compact ? 44 : 128;
       const right = compact ? 8 : 16;
@@ -240,10 +308,11 @@
       const yP2 = yP1 + s + (linkSpace ? Math.max(40, Math.round(s * 0.7)) : gap);
       const yAux = yP2 + s + 52;
       const auxSq = Math.round(Math.min(34, s * 0.62));
-      const yC1 = hasAux ? yAux + auxSq + 36 : yP2 + s + 44;
+      const auxH = hasAux && AUX[auxType].height ? AUX[auxType].height({ s }) : auxSq;
+      const yC1 = hasAux ? yAux + auxH + 36 : yP2 + s + 44;
       const yC2 = yC1 + s + gap;
       const H = yC2 + s + 18;
-      return { W, n, compact, left, cell, s, x0, yHandle, yIdx, yAux, auxSq, H, rowY: { p1: yP1, p2: yP2, c1: yC1, c2: yC2 } };
+      return { W, n, compact, left, cell, s, x0, yHandle, yIdx, yAux, auxSq, auxH, H, rowY: { p1: yP1, p2: yP2, c1: yC1, c2: yC2 } };
     }
 
     const geneX = (i) => geo.x0 + i * geo.cell + (geo.cell - geo.s) / 2;
@@ -254,17 +323,26 @@
       const s = geo.s;
       g.selectAll('*').remove();
       const mapped = d.kind === 'mapped';
+      const blend = d.kind === 'blend';   // gen combinado (cruce aritmético): w = parte del Padre 1
+      const fillOf = () => {
+        if (mapped) return `url(#hatch-${d.origin})`;
+        if (blend) return `color-mix(in srgb, var(--p1) ${Math.round(d.w * 100)}%, var(--p2))`;
+        return `var(--${d.origin})`;
+      };
       g.append('rect')
         .attr('class', 'gene-rect')
         .attr('width', s).attr('height', s)
         .attr('rx', Math.max(4, s * 0.14))
-        .style('fill', mapped ? `url(#hatch-${d.origin})` : `var(--${d.origin})`);
+        .style('fill', fillOf());
+      const txt = String(fmt(d.v));
+      // Los valores largos (reales con decimales) se escriben más pequeños para que quepan.
+      const fs = Math.min(s * 0.44, (s * 0.9) / (txt.length * 0.58));
       g.append('text')
-        .attr('class', mapped ? 'gene-num gene-num-halo' : `gene-num ink-${d.origin}`)
+        .attr('class', mapped || blend ? 'gene-num gene-num-halo' : `gene-num ink-${d.origin}`)
         .attr('x', s / 2).attr('y', s / 2)
         .attr('dy', '0.36em')
-        .style('font-size', `${Math.round(s * 0.44)}px`)
-        .text(d.v);
+        .style('font-size', `${Math.round(fs)}px`)
+        .text(txt);
       if (mapped) {
         const r = Math.max(7, s * 0.15);
         const b = g.append('g').attr('class', 'badge').attr('transform', `translate(${s - r * 0.55},${r * 0.55})`);
@@ -277,7 +355,7 @@
       const sizeChanged = !geo || geo.n !== np.p1.length;
       const auxChanged = !problem || (problem.aux && problem.aux.type) !== (np.aux && np.aux.type);
       problem = np;
-      geo = layout(np.p1.length, !!np.aux, !!np.links);
+      geo = layout(np.p1.length, np.aux && np.aux.type, !!np.links);
       svg.attr('viewBox', `0 0 ${geo.W} ${geo.H}`);
       if (sizeChanged) {
         gParents.selectAll('*').remove();
@@ -308,7 +386,7 @@
         .attr('dy', '0.35em')
         .text((d) => label(d.key + short));
       gLabels.selectAll('text.aux-caption')
-        .data(problem.aux ? [AUX[problem.aux.type].caption] : [])
+        .data(problem.aux ? [(geo.compact && AUX[problem.aux.type].captionShort) || AUX[problem.aux.type].caption] : [])
         .join('text')
         .attr('class', 'aux-caption')
         .classed('visible', !!(current && current.auxVisible))
@@ -503,7 +581,7 @@
       if (problem.aux) {
         const A = AUX[problem.aux.type];
         if (A.captionParams) caption.text(label(A.caption, A.captionParams(step)));
-        A.show(gAux, step, problem.aux.items, geo, label);
+        A.show(gAux, step, problem.aux.items, geo, label, fmt);
       }
 
       // Animación: el gen "vuela" desde el padre hasta su hueco en el hijo
@@ -530,7 +608,9 @@
     }
 
     function refreshLabels() {
-      if (geo) drawLabels();
+      if (!geo) return;
+      drawLabels();
+      drawParents();
     }
 
     let resizeTimer = null;

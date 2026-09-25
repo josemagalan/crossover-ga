@@ -1,23 +1,24 @@
 /*
- * Cruce uniforme para representación binaria: cada posición se decide por separado.
- * Se intercambia la posición i si un número aleatorio r_i en [0, 1) cumple r_i <= p
- * (p = 0,5 en la versión original; con p < 0,5 se habla de cruce uniforme parametrizado).
- * El sorteo es reproducible (opts.seed) o se puede fijar (opts.draws, lista de r_i).
+ * Cruce uniforme para representación real: igual que en la binaria, cada posición se decide
+ * por separado y los hijos intercambian el gen i si r_i <= p. Los valores no se modifican:
+ * cada gen del hijo es exactamente el de uno de los padres (Luke, 2013, algoritmo 25).
+ * Mühlenbein y Schlierkamp-Voosen (1993) lo llaman cruce discreto.
  */
 (function (root) {
   'use strict';
   const isNode = typeof module !== 'undefined' && module.exports;
   const B = isNode ? require('./bin-utils.js') : root.GAX.binUtils;
+  const U = isNode ? require('./real-utils.js') : root.GAX.realUtils;
 
   function uniform(p1, p2, p, opts) {
-    const err = B.validateParents(p1, p2);
+    const err = U.validateParents(p1, p2);
     if (err) throw new Error(err);
     return B.uniformTrace(p1, p2, p, opts);
   }
 
   const spec = {
-    id: 'uniform-binary',
-    representation: 'binary',
+    id: 'uniform-real',
+    representation: 'real',
     cuts: 0,
     aux: 'mask',
     legend: ['p1', 'p2', 'mask'],
@@ -26,7 +27,7 @@
     run: (p1, p2, cuts, opts) => uniform(p1, p2, (opts && opts.params && opts.params.p) || 0.5, { seed: opts && opts.seed, draws: opts && opts.draws }),
   };
 
-  const api = { uniform, validateParents: B.validateParents, spec };
+  const api = { uniform, validateParents: U.validateParents, spec };
   if (isNode) module.exports = api;
-  else ((root.GAX = root.GAX || {}).operators = root.GAX.operators || {})['uniform-binary'] = api;
+  else ((root.GAX = root.GAX || {}).operators = root.GAX.operators || {})['uniform-real'] = api;
 })(typeof self !== 'undefined' ? self : this);

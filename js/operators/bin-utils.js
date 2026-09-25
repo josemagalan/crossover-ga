@@ -127,7 +127,50 @@
     };
   }
 
-  const api = { validateParents, randomBits, maskFromCuts, bandsFromMask, positionsWhere, newTrace, doneStep, cutsTrace, R };
+  /**
+   * Traza del cruce uniforme, común a las representaciones binaria y real (los genes se copian
+   * tal cual; solo cambia qué valores contienen). Se intercambia la posición i si un número
+   * aleatorio r_i en [0, 1) cumple r_i <= p. El sorteo es reproducible (opts.seed) o se puede
+   * fijar (opts.draws, lista de r_i). No valida los padres: lo hace cada operador.
+   */
+  function uniformTrace(p1, p2, p, opts) {
+    if (!(p > 0 && p <= 1)) throw new Error('errParam');
+    opts = opts || {};
+    const n = p1.length;
+    const rand = R.mulberry32((opts.seed >>> 0) || 1);
+    // Sorteos redondeados a centésimas, para que la narración muestre exactamente el número comparado con p.
+    const draws = Array.isArray(opts.draws) ? opts.draws.slice(0, n) : Array.from({ length: n }, () => Math.floor(rand() * 100) / 100);
+    const mask = draws.map((r) => (r <= p ? 1 : 0));
+
+    const T = newTrace(n);
+    T.snap({ type: 'intro', text: { key: 'intro', params: { n } } });
+    T.st.auxVisible = true;
+    T.snap({ type: 'maskIntro', text: { key: 'maskIntro', params: { p } } });
+    for (let i = 0; i < n; i++) {
+      T.st.maskShown.push(i);
+      const swap = mask[i] === 1;
+      const fly = T.place(i, swap, p1, p2);
+      T.snap({
+        type: swap ? 'drawSwap' : 'drawKeep',
+        text: { key: swap ? 'drawSwap' : 'drawKeep', params: { pos: i + 1, r: draws[i], p } },
+        fly,
+        highlight: { p1: [i], p2: [i], c1: [i], c2: [i] },
+        auxActive: [i],
+      });
+    }
+    T.st.segmentVisible = true;
+    doneStep(T.snap, p1, p2, mask);
+    return {
+      children: T.children.map((c) => c.map((g) => g.v)),
+      steps: T.steps,
+      mask,
+      draws,
+      bands: bandsFromMask(mask),
+      aux: { type: 'mask', items: mask },
+    };
+  }
+
+  const api = { validateParents, randomBits, maskFromCuts, bandsFromMask, positionsWhere, newTrace, doneStep, cutsTrace, uniformTrace, R };
   if (isNode) module.exports = api;
   else (root.GAX = root.GAX || {}).binUtils = api;
 })(typeof self !== 'undefined' ? self : this);

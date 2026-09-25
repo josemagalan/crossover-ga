@@ -13,6 +13,7 @@ const { spawnSync } = require('node:child_process');
 const registry = require('../js/registry.js');
 const rng = require('../js/rng.js');
 const B = require('../js/operators/bin-utils.js');
+const U = require('../js/operators/real-utils.js');
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ga-content-'));
 const PY = ['python3', 'python'].find((cmd) => spawnSync(cmd, ['--version']).status === 0);
@@ -21,6 +22,7 @@ const readyOps = registry.representations.flatMap((r) => r.operators.map((o) => 
 const GEN = {
   permutation: (r, n) => rng.randomPermutation(r, n),
   binary: (r, n) => B.randomBits(r, n),
+  real: (r, n) => U.randomReals(r, n),
 };
 const isPerm = (a, n) => a.length === n && new Set(a).size === n && a.every((v) => v >= 1 && v <= n);
 
@@ -29,11 +31,13 @@ const isPerm = (a, n) => a.length === n && new Set(a).size === n && a.every((v) 
  *   cuts2   f(p1, p2, c1, c2[, variante])     PMX, OX, dos puntos
  *   cut1    f(p1, p2, c)                      un punto, contraejemplo
  *   cutsK   f(p1, p2, cortes)                 n puntos
- *   pRng    f(p1, p2, p, azar)                uniforme
+ *   pRng    f(p1, p2, p, azar)                uniforme (binario y real)
+ *   lam     f(p1, p2, λ)                      aritmético
  *   vRng    f(p1, p2, variante, azar)         CX
  */
 function styleOf(spec) {
   if (spec.params && spec.params.some((p) => p.id === 'p')) return 'pRng';
+  if (spec.params && spec.params.some((p) => p.id === 'lambda')) return 'lam';
   if (spec.cuts === 'k') return 'cutsK';
   if (spec.cuts === 0) return 'vRng';
   if (spec.cuts === 1) return 'cut1';
@@ -57,6 +61,7 @@ function makeCases(op, spec, count, seed, variant) {
       c.cuts = rng.shuffle(r, Array.from({ length: n - 1 }, (_, i) => i + 1)).slice(0, k).sort((a, b) => a - b);
     } else { c.cuts = []; }
     if (st === 'pRng') c.params.p = [0.1, 0.25, 0.5][cases.length % 3];
+    if (st === 'lam') c.params.lambda = [0, 0.05, 0.25, 0.35, 0.5, 0.7, 1][cases.length % 7];
     const res = spec.run(p1, p2, c.cuts, { variant, seed: c.seed, params: c.params });
     c.expected = res.children;
     c.draws = res.draws || null;         // uniforme: números sorteados
@@ -80,6 +85,7 @@ function callJs(fn, c) {
     case 'cut1': return fn(c.p1, c.p2, c.cut);
     case 'cutsK': return fn(c.p1, c.p2, c.cuts);
     case 'pRng': return fn(c.p1, c.p2, c.params.p, scriptedJs(c));
+    case 'lam': return fn(c.p1, c.p2, c.params.lambda);
     default: return fn(c.p1, c.p2, c.v, scriptedJs(c));
   }
 }
@@ -99,6 +105,7 @@ const PY_DRIVER = (moduleName, fnName) => [
   '    if st == "cut1": return fn(c["p1"], c["p2"], c["cut"])',
   '    if st == "cutsK": return fn(c["p1"], c["p2"], c["cuts"])',
   '    if st == "pRng": return fn(c["p1"], c["p2"], c["params"]["p"], rng=Scripted(c))',
+  '    if st == "lam": return fn(c["p1"], c["p2"], c["params"]["lambda"])',
   '    return fn(c["p1"], c["p2"], variant=c["v"], rng=Scripted(c))',
   'cases = json.load(sys.stdin)',
   'print(json.dumps([[list(h) for h in call(c)] for c in cases]))',

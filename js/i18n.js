@@ -21,6 +21,7 @@
       svgLabel: 'Visualización paso a paso: {name}',
       manualHint_permutation: 'Números del 1 al n separados por comas o espacios (n entre 5 y 12).',
       manualHint_binary: 'Ceros y unos, seguidos o separados por espacios (entre 5 y 12 bits).',
+      manualHint_real: 'Números entre 0 y 100 separados por espacios, con coma o punto decimal y hasta dos decimales (entre 5 y 12 genes).',
       pseudoFileSuffix: 'pseudocodigo.txt',
       variant: 'Variante',
       drawAgain: 'Sortear de nuevo',
@@ -73,6 +74,7 @@
       errRange: 'La longitud debe estar entre 5 y 12.',
       errPerm: 'Cada padre debe contener los números 1…n exactamente una vez.',
       errBits: 'Cada padre debe contener solo ceros y unos.',
+      errReal: 'Cada gen debe ser un número entre 0 y 100 con dos decimales como mucho.',
     },
     en: {
       brand: 'Crossover in genetic algorithms',
@@ -89,6 +91,7 @@
       svgLabel: 'Step-by-step visualisation: {name}',
       manualHint_permutation: 'Numbers 1 to n separated by commas or spaces (n between 5 and 12).',
       manualHint_binary: 'Zeros and ones, together or separated by spaces (between 5 and 12 bits).',
+      manualHint_real: 'Numbers between 0 and 100 separated by spaces, with a decimal point or comma and up to two decimals (between 5 and 12 genes).',
       pseudoFileSuffix: 'pseudocode.txt',
       variant: 'Variant',
       drawAgain: 'Draw again',
@@ -141,6 +144,7 @@
       errRange: 'Length must be between 5 and 12.',
       errPerm: 'Each parent must contain the numbers 1…n exactly once.',
       errBits: 'Each parent must contain only zeros and ones.',
+      errReal: 'Each gene must be a number between 0 and 100 with at most two decimals.',
     },
   };
 

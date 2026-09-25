@@ -429,6 +429,17 @@ summary {
 .mcell.shown.one .mcell-rect { fill: var(--ink); }
 .mcell.shown.one .mcell-bit { fill: var(--card); }
 .mcell.active .mcell-rect { stroke: var(--accent); stroke-width: 4; }
+.lerp-grid { stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 4; }
+.lerp-tick { text-anchor: end; font-size: 12px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+.lerp-seg { stroke: var(--muted); stroke-width: 3; stroke-linecap: round; }
+.lerp-p { stroke: var(--card); stroke-width: 1.5; }
+.lerp-p1 { fill: var(--p1); }
+.lerp-p2 { fill: var(--p2); }
+.lerp-c { opacity: 0; stroke: var(--ink); stroke-width: 1.5; transition: opacity 0.3s; }
+.lerp-c.shown { opacity: 1; }
+.lerp-col { transition: opacity 0.3s; }
+.lerp-col.dim { opacity: 0.35; }
+.lerp-col.active .lerp-seg { stroke: var(--focus); }
 .slot-num { text-anchor: middle; font-weight: 600; fill: var(--muted); font-variant-numeric: tabular-nums; pointer-events: none; }
 
 @keyframes shake {
@@ -523,6 +534,7 @@ summary {
 .sw-conflict { border: 4px solid var(--conflict); }
 .sw-segment { background: var(--band); border: 2px dashed var(--ink); }
 .sw-mask { background: var(--ink); }
+.sw-blend { background: linear-gradient(90deg, var(--p1), var(--p2)); }
 .sw-link { width: 24px; height: 12px; border-radius: 0; border-bottom: 3px solid var(--ink); border-right: 3px solid var(--ink); transform: skewX(-20deg); }
 
 /* Para saber más */
