@@ -35,13 +35,16 @@ for (const op of readyOps) {
   const { spec } = require(`../js/operators/${op.id}.js`);
   const content = require(`../js/content/${op.id}.js`);
   const variants = spec.variants || [null];
-  const cutsOf = (c) => (spec.cuts === 2 ? [c.c1, c.c2] : []);
+  const cut1 = (c) => Math.min(Math.max(c.c1, 1), c.p1.length - 1);
+  const cutsOf = (c) => (spec.cuts === 2 ? [c.c1, c.c2] : spec.cuts === 1 ? [cut1(c)] : []);
+  const fnName = (lang) => (content.fnName ? content.fnName[lang] : op.id);
   const toolRun = (c, v) => spec.run(c.p1, c.p2, cutsOf(c), { variant: v, seed: c.seed });
   const expected = (c, v) => toolRun(c, v).children;
   // Las elecciones al azar de la herramienta, para repetirlas en el código descargable
   const scripted = (choices) => { const q = choices.slice(); return () => (q.shift() === 'p1' ? 0.25 : 0.75); };
   const callJs = (fn, c, v) => {
     if (spec.cuts === 0) return fn(c.p1, c.p2, v, scripted(toolRun(c, v).choices || []));
+    if (spec.cuts === 1) return fn(c.p1, c.p2, cut1(c));
     return v ? fn(c.p1, c.p2, c.c1, c.c2, v) : fn(c.p1, c.p2, c.c1, c.c2);
   };
   const pseudo = (lang, v) => (content.pseudocodeFor ? content.pseudocodeFor(lang, v) : content.pseudocode[lang]);
@@ -52,7 +55,7 @@ for (const op of readyOps) {
       const src = content.getCode('javascript', lang);
       assert.doesNotMatch(src, /\{\{\w+\}\}/, 'quedan marcadores sin sustituir');
       fs.writeFileSync(file, src);
-      const fn = require(file)[op.id];
+      const fn = require(file)[fnName('javascript')];
       variants.forEach((v, vi) => {
         for (const c of randomCases(800, 11 + vi)) {
           assert.deepEqual(callJs(fn, c, v), expected(c, v), `variante ${v}`);
@@ -61,7 +64,8 @@ for (const op of readyOps) {
       for (let t = 0; t < 200; t++) {
         const n = 5 + (t % 8);
         const [h1, h2] = fn(rng.randomPermutation(Math.random, n), rng.randomPermutation(Math.random, n));
-        assert.ok(isPerm(h1, n) && isPerm(h2, n), 'cortes aleatorios por defecto');
+        if (spec.invalidChildren) assert.ok(h1.length === n && h2.length === n);
+        else assert.ok(isPerm(h1, n) && isPerm(h2, n), 'cortes aleatorios por defecto');
       }
     });
 
@@ -70,14 +74,15 @@ for (const op of readyOps) {
       const dir = fs.mkdtempSync(path.join(tmp, `${op.id}-${lang}-`));
       const src = content.getCode('python', lang);
       assert.doesNotMatch(src, /\{\{\w+\}\}/, 'quedan marcadores sin sustituir');
-      fs.writeFileSync(path.join(dir, `${op.id}.py`), src);
+      const pyFile = content.codeTemplates.python.filename;
+      fs.writeFileSync(path.join(dir, pyFile), src);
       const cases = [];
       variants.forEach((v, vi) => randomCases(800, 21 + vi).forEach((c) => {
-        cases.push(Object.assign({ v, cuts: spec.cuts, choices: toolRun(c, v).choices || [] }, c));
+        cases.push(Object.assign({ v, cuts: spec.cuts, cut: cut1(c), choices: toolRun(c, v).choices || [] }, c));
       }));
       const driver = [
         'import json, random, sys',
-        `from ${op.id} import ${op.id} as fn`,
+        `from ${pyFile.replace(/\.py$/, '')} import ${fnName('python')} as fn`,
         'class Scripted:',
         '    def __init__(self, ch): self.ch = list(ch)',
         '    def random(self): return 0.25 if self.ch.pop(0) == "p1" else 0.75',
@@ -85,7 +90,9 @@ for (const op of readyOps) {
         'out = []',
         'for c in cases:',
         '    kw = {"variant": c["v"]} if c["v"] else {}',
-        '    if c["cuts"] == 0:',
+        '    if c["cuts"] == 1:',
+        '        res = fn(c["p1"], c["p2"], c["cut"])',
+        '    elif c["cuts"] == 0:',
         '        res = fn(c["p1"], c["p2"], rng=Scripted(c["choices"]), **kw)',
         '    else:',
         '        res = fn(c["p1"], c["p2"], c["c1"], c["c2"], **kw)',
@@ -102,11 +109,11 @@ for (const op of readyOps) {
       assert.equal(res.status, 0, res.stderr);
       const { out, randomOk } = JSON.parse(res.stdout);
       cases.forEach((c, i) => assert.deepEqual(out[i], expected(c, c.v), `variante ${c.v}`));
-      assert.ok(randomOk, 'los cortes aleatorios de Python deben dar hijos válidos');
+      if (!spec.invalidChildren) assert.ok(randomOk, 'los cortes aleatorios de Python deben dar hijos válidos');
       // El bloque __main__ imprime lo que dicen sus comentarios
-      const demo = spawnSync(PY, [`${op.id}.py`], { cwd: dir, encoding: 'utf8' });
-      const promised = [...src.matchAll(/print\(h[12]\)\s+#\s*(\[.*\])/g)].map((m) => m[1]).join('\n');
-      assert.equal(demo.stdout.trim(), promised);
+      const demo = spawnSync(PY, [pyFile], { cwd: dir, encoding: 'utf8' });
+      const promised = [...src.matchAll(/print\(h[12]\)\s+#\s*(\[.*\])/g)].map((m) => m[1]);
+      assert.deepEqual(demo.stdout.trim().split('\n').slice(0, promised.length), promised);
     });
   }
 

@@ -44,7 +44,7 @@ for (const op of ops.filter((o) => o.ready)) {
     for (const variant of spec.variants || [undefined]) {
       for (let t = 0; t < 200; t++) {
         const n = rng.randInt(r, 5, 12);
-        const cuts = spec.cuts === 2 ? rng.randomCuts(r, n) : [];
+        const cuts = spec.cuts === 2 ? rng.randomCuts(r, n) : spec.cuts === 1 ? [rng.randInt(r, 1, n - 1)] : [];
         const res = spec.run(rng.randomPermutation(r, n), rng.randomPermutation(r, n), cuts, { variant });
         res.steps.forEach((s) => keys.add(s.text.key));
       }

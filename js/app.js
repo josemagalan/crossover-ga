@@ -58,12 +58,15 @@
     const k = spec().cuts;
     if (!Array.isArray(cuts) || cuts.length !== k) return false;
     if (k === 0) return true;
+    if (k === 1) return Number.isInteger(cuts[0]) && cuts[0] >= 1 && cuts[0] <= n - 1;
     const [c1, c2] = cuts;
     return Number.isInteger(c1) && Number.isInteger(c2) && c1 >= 0 && c2 <= n && c2 - c1 >= 1 && c2 - c1 <= n - 1;
   }
 
   function randomCuts(rng, n) {
-    return spec().cuts === 2 ? R.randomCuts(rng, n) : [];
+    if (spec().cuts === 2) return R.randomCuts(rng, n);
+    if (spec().cuts === 1) return [R.randInt(rng, 1, n - 1)];
+    return [];
   }
 
   // Posición válida más cercana a la pedida al arrastrar el corte i.
@@ -73,6 +76,8 @@
     if (spec().cuts === 2) {
       if (i === 0) c[0] = Math.max(0, c[1] - (n - 1), Math.min(g, c[1] - 1));
       else c[1] = Math.min(n, c[0] + (n - 1), Math.max(g, c[0] + 1));
+    } else if (spec().cuts === 1) {
+      c[0] = Math.max(1, Math.min(n - 1, g));
     }
     return c;
   }

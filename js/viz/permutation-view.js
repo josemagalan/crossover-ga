@@ -90,6 +90,36 @@
       },
     },
 
+    // Contraejemplo: genes que faltan en cada hijo.
+    missing: {
+      caption: 'missingList',
+      draw() {},
+      show(g, step, items, geo, label) {
+        const h = geo.auxSq;
+        const fs = Math.round(h * 0.46);
+        const charW = fs * 0.6;
+        const data = items.map((it, k) => {
+          const text = label('missingPill', { child: k + 1, list: it.missing.join(', ') });
+          return { k, text, w: Math.round(text.length * charW + 28) };
+        }).filter((d, k) => items[k].missing.length);
+        const gap = 14;
+        const total = data.reduce((a, d) => a + d.w, 0) + gap * Math.max(0, data.length - 1);
+        let x = geo.x0 + (geo.cell * geo.n - total) / 2;
+        data.forEach((d) => { d.x = x; x += d.w + gap; });
+        const pills = g.selectAll('g.miss')
+          .data(data, (d) => d.k)
+          .join((enter) => {
+            const c = enter.append('g').attr('class', 'miss');
+            c.append('rect').attr('class', 'miss-rect');
+            c.append('text').attr('class', 'miss-text');
+            return c;
+          });
+        pills.attr('transform', (d) => `translate(${d.x},${geo.yAux})`);
+        pills.select('.miss-rect').attr('width', (d) => d.w).attr('height', h).attr('rx', h / 2);
+        pills.select('.miss-text').attr('x', (d) => d.w / 2).attr('y', h / 2).attr('dy', '0.36em').style('font-size', `${fs}px`).text((d) => d.text);
+      },
+    },
+
     // OX: lista ordenada de los genes que faltan en el hijo que se está construyendo.
     order: {
       caption: 'orderList',

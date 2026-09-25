@@ -44,6 +44,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 
 body {
   margin: 0;
@@ -418,6 +419,8 @@ summary {
 .cycle-text { text-anchor: middle; font-weight: 700; font-variant-numeric: tabular-nums; }
 .link { fill: none; stroke: var(--ink); stroke-width: 2.5; }
 .link-head { fill: var(--ink); }
+.miss-rect { fill: var(--card); stroke: var(--conflict); stroke-width: 2.5; stroke-dasharray: 5 3; }
+.miss-text { text-anchor: middle; font-weight: 700; fill: var(--ink); }
 .slot-num { text-anchor: middle; font-weight: 600; fill: var(--muted); font-variant-numeric: tabular-nums; pointer-events: none; }
 
 @keyframes shake {

@@ -80,6 +80,16 @@
       sample: ['3', '1', '4', '2', '5'],
       operators: [
         {
+          id: 'one-point-perm',
+          ready: true,
+          name: { es: 'Contraejemplo: cruce en un punto', en: 'Counterexample: one-point crossover' },
+          summary: { es: 'Por qué hacen falta operadores específicos: aparecen genes repetidos.', en: 'Why specific operators are needed: genes get repeated.' },
+          subtitle: {
+            es: 'Qué ocurre si se aplica a permutaciones el cruce clásico de la representación binaria',
+            en: 'What happens when the classic binary crossover is applied to permutations',
+          },
+        },
+        {
           id: 'pmx',
           ready: true,
           name: { es: 'Cruce PMX', en: 'PMX crossover' },
