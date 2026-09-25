@@ -91,8 +91,13 @@
         },
         {
           id: 'ox',
+          ready: true,
           name: { es: 'Cruce OX', en: 'OX crossover' },
           summary: { es: 'Segmento de un padre y el resto en el orden relativo del otro.', en: 'A segment from one parent and the rest in the other’s relative order.' },
+          subtitle: {
+            es: 'Order Crossover: un segmento de un padre y el resto en el orden del otro',
+            en: 'Order Crossover: a segment from one parent and the rest in the other’s order',
+          },
         },
         {
           id: 'cx',

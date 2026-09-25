@@ -54,11 +54,16 @@
             <label for="seed" data-i18n="seed">Semilla</label>
             <input type="number" id="seed" min="0" max="999999" step="1" inputmode="numeric">
           </div>
+          <div class="field" id="variantField" hidden>
+            <label for="variant" data-i18n="variant">Variante</label>
+            <select id="variant"></select>
+          </div>
           <div class="buttons">
             <button type="button" id="btnRandom" class="btn primary" data-i18n="randomParents">Padres aleatorios</button>
             <button type="button" id="btnCuts" class="btn" data-i18n="randomCuts">Cortes aleatorios</button>
           </div>
         </div>
+        <p id="variantDesc" class="hint variant-desc" hidden></p>
         <details id="manual">
           <summary data-i18n="manualParents">Introducir padres a mano</summary>
           <form id="manualForm" class="manual-form" novalidate>
@@ -167,9 +172,12 @@
   <script src="js/rng.js"></script>
   <script src="js/i18n.js"></script>
   <script src="js/registry.js"></script>
+  <script src="js/operators/perm-utils.js"></script>
   <script src="js/operators/pmx.js"></script>
+  <script src="js/operators/ox.js"></script>
   <script src="js/viz/permutation-view.js"></script>
   <script src="js/content/pmx.js"></script>
+  <script src="js/content/ox.js"></script>
   <script src="js/learn.js"></script>
   <script src="js/home.js"></script>
   <script src="js/app.js"></script>

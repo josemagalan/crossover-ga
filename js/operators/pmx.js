@@ -14,31 +14,8 @@
 (function (root) {
   'use strict';
 
-  /** Devuelve null si p1 y p2 son permutaciones válidas de 1..n, o una clave de error. */
-  function validateParents(p1, p2) {
-    if (!Array.isArray(p1) || !Array.isArray(p2)) return 'errFormat';
-    if (p1.length !== p2.length) return 'errLength';
-    const n = p1.length;
-    if (n < 5 || n > 12) return 'errRange';
-    const isPerm = (p) => {
-      if (p.some((v) => !Number.isInteger(v))) return false;
-      const s = new Set(p);
-      return s.size === n && p.every((v) => v >= 1 && v <= n);
-    };
-    if (!isPerm(p1) || !isPerm(p2)) return 'errPerm';
-    return null;
-  }
-
-  function validateCuts(n, c1, c2) {
-    return Number.isInteger(c1) && Number.isInteger(c2) &&
-      c1 >= 0 && c2 <= n && c2 - c1 >= 1 && c2 - c1 <= n - 1;
-  }
-
-  function range(a, b) {
-    const r = [];
-    for (let i = a; i < b; i++) r.push(i);
-    return r;
-  }
+  const U = (typeof module !== 'undefined' && module.exports) ? require('./perm-utils.js') : root.GAX.permUtils;
+  const { validateParents, validateCuts, range } = U;
 
   function pmx(p1, p2, c1, c2) {
     const err = validateParents(p1, p2);

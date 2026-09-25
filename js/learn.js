@@ -21,6 +21,7 @@
     };
 
     let kind = 'pseudo';
+    let variant = null;
     let currentLines = [];
     let statusTimer = null;
 
@@ -95,7 +96,8 @@
       const code = document.createElement('code');
       if (kind === 'pseudo') {
         const kws = content.keywords[l] || [];
-        content.pseudocode[l].forEach((line) => {
+        const lines = content.pseudocodeFor ? content.pseudocodeFor(l, variant) : content.pseudocode[l];
+        lines.forEach((line) => {
           const row = document.createElement('span');
           row.className = 'line pseudo';
           row.dataset.line = line.id;
@@ -135,7 +137,7 @@
     }
 
     function currentText() {
-      return kind === 'pseudo' ? content.getPseudocodeText(lang()) : content.getCode(kind, lang());
+      return kind === 'pseudo' ? content.getPseudocodeText(lang(), variant) : content.getCode(kind, lang());
     }
     function filename() {
       return kind === 'pseudo' ? `${content.id}-${t('pseudoFileSuffix')}` : content.codeTemplates[kind].filename;
@@ -234,8 +236,15 @@
     }
 
     // Cambia de operador: nuevo contenido, vuelta a la primera pestaña y al pseudocódigo.
-    function setContent(next) {
-      if (next === content) return;
+    function setVariant(v) {
+      if (v === variant) return;
+      variant = v;
+      renderCode();
+    }
+
+    function setContent(next, v) {
+      variant = v || null;
+      if (next === content) { renderCode(); return; }
       content = next;
       kind = 'pseudo';
       currentLines = [];
@@ -244,7 +253,7 @@
     }
 
     refresh();
-    return { refresh, setStep, setContent };
+    return { refresh, setStep, setContent, setVariant };
   }
 
   (root.GAX = root.GAX || {}).createLearnPanel = createLearnPanel;

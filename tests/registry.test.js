@@ -41,11 +41,13 @@ for (const op of ops.filter((o) => o.ready)) {
     // Cada clave de texto que emite la traza existe en la narración del operador (o en la interfaz general)
     const r = rng.mulberry32(99);
     const keys = new Set();
-    for (let t = 0; t < 200; t++) {
-      const n = rng.randInt(r, 5, 12);
-      const cuts = spec.cuts === 2 ? rng.randomCuts(r, n) : [];
-      const res = spec.run(rng.randomPermutation(r, n), rng.randomPermutation(r, n), cuts);
-      res.steps.forEach((s) => keys.add(s.text.key));
+    for (const variant of spec.variants || [undefined]) {
+      for (let t = 0; t < 200; t++) {
+        const n = rng.randInt(r, 5, 12);
+        const cuts = spec.cuts === 2 ? rng.randomCuts(r, n) : [];
+        const res = spec.run(rng.randomPermutation(r, n), rng.randomPermutation(r, n), cuts, { variant });
+        res.steps.forEach((s) => keys.add(s.text.key));
+      }
     }
     const legendLabels = { mapped: 'legendMapped' };
     for (const lang of ['es', 'en']) {

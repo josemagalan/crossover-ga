@@ -2,7 +2,7 @@
 
 Herramienta docente interactiva (D3.js) que ilustra paso a paso los operadores de cruce de los algoritmos genéticos, clasificados por tipo de representación. Está pensada para alumnos de grado en Informática.
 
-**Estado:** prototipo con el cruce PMX (representación permutacional). Después vendrán OX y CX, y los cruces para representación binaria y real.
+**Estado:** disponibles los cruces PMX y OX (representación permutacional; OX con tres variantes). Después vendrán CX y los cruces para representación binaria y real.
 
 ## Qué incluye
 
@@ -56,6 +56,6 @@ José Manuel Galán, Universidad de Burgos.
 
 ## English
 
-Interactive teaching tool (D3.js) that illustrates genetic algorithm crossover operators step by step, grouped by representation type. It currently includes PMX; OX, CX and the binary and real-valued operators will follow.
+Interactive teaching tool (D3.js) that illustrates genetic algorithm crossover operators step by step, grouped by representation type. It currently includes PMX and OX (with three variants); CX and the binary and real-valued operators will follow.
 
 Open `index.html` in a browser; no server or internet connection is needed. Run the tests with `npm test` (Node.js 22 or later). Code is released under the MIT licence and the teaching texts under CC BY 4.0.

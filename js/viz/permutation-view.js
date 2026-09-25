@@ -53,11 +53,44 @@
           .classed('dim', (d) => act.length > 0 && act.indexOf(d.k) === -1);
       },
     },
+
+    // OX: lista ordenada de los genes que faltan en el hijo que se está construyendo.
+    order: {
+      caption: 'orderList',
+      captionParams: (step) => ({ child: (step.auxChild || 0) + 1 }),
+      draw() {},
+      show(g, step, items, geo) {
+        const it = items[step.auxChild || 0];
+        const m = it.list.length;
+        const avail = geo.cell * geo.n;
+        const sq = Math.max(18, Math.min(geo.auxSq + 4, (avail - (m - 1) * 8) / m));
+        const gap = Math.max(6, Math.min(14, (avail - m * sq) / Math.max(1, m - 1)));
+        const start = geo.x0 + (avail - (m * sq + (m - 1) * gap)) / 2;
+        const act = step.auxActive || [];
+        const placed = step.auxPlaced || 0;
+        const chips = g.selectAll('g.ochip')
+          .data(it.list.map((v, j) => ({ v, j, donor: it.donor, key: `${step.auxChild}-${j}-${v}` })), (d) => d.key)
+          .join((enter) => {
+            const c = enter.append('g').attr('class', 'ochip');
+            c.append('rect').attr('class', 'ochip-rect');
+            c.append('text').attr('class', 'ochip-num');
+            c.append('text').attr('class', 'ochip-idx');
+            return c;
+          });
+        chips.attr('transform', (d) => `translate(${start + d.j * (sq + gap)},${geo.yAux})`)
+          .classed('active', (d) => act.indexOf(d.j) !== -1)
+          .classed('placed', (d) => d.j < placed && act.indexOf(d.j) === -1);
+        chips.select('.ochip-rect').attr('width', sq).attr('height', sq).attr('rx', 5).style('fill', (d) => `var(--${d.donor})`);
+        chips.select('.ochip-num').attr('class', (d) => `ochip-num ink-${d.donor}`)
+          .attr('x', sq / 2).attr('y', sq / 2).attr('dy', '0.36em').style('font-size', `${Math.round(sq * 0.5)}px`).text((d) => d.v);
+        chips.select('.ochip-idx').attr('x', sq / 2).attr('y', sq + 13).text((d) => `#${d.j + 1}`);
+      },
+    },
   };
 
   function createPermutationView(svgEl, opts) {
     const svg = d3.select(svgEl);
-    const label = opts.label;                 // (key) => texto traducido
+    const label = opts.label;                 // (key, params) => texto traducido
     const duration = opts.duration;           // () => ms de animación
     const onCutDrag = opts.onCutDrag;         // (índice del corte, hueco deseado) => void
 
@@ -82,6 +115,7 @@
     const gIdx = svg.append('g').attr('class', 'indices');
     const gCutLines = svg.append('g').attr('class', 'cut-lines');
     const gSlots = svg.append('g').attr('class', 'slots');
+    const gSlotNums = svg.append('g').attr('class', 'slot-nums');
     const gParents = svg.append('g').attr('class', 'parents');
     const gChildren = svg.append('g').attr('class', 'children');
     const gAux = svg.append('g').attr('class', 'aux');
@@ -179,7 +213,7 @@
         .classed('visible', !!(current && current.auxVisible))
         .attr('x', geo.x0 + (geo.cell * geo.n) / 2)
         .attr('y', geo.yAux - 16)
-        .text((key) => label(key));
+        .text((key) => label(key, current && AUX[problem.aux.type].captionParams ? AUX[problem.aux.type].captionParams(current) : undefined));
     }
 
     function drawIndices() {
@@ -325,10 +359,29 @@
         .classed('active', (d) => has(step.highlight, d.row, d.pos))
         .classed('conflict', (d) => has(step.conflict, d.row, d.pos));
 
+      // Orden de relleno de los huecos (números dentro de los huecos todavía vacíos)
+      const nums = [];
+      Object.keys(step.slotOrder || {}).forEach((row) => {
+        const k = row === 'c1' ? 0 : 1;
+        step.slotOrder[row].forEach((pos, j) => { if (!step.children[k][pos]) nums.push({ row, pos, j }); });
+      });
+      gSlotNums.selectAll('text.slot-num')
+        .data(nums, (d) => `${d.row}-${d.pos}`)
+        .join('text')
+        .attr('class', 'slot-num')
+        .attr('x', (d) => geneX(d.pos) + geo.s / 2)
+        .attr('y', (d) => geo.rowY[d.row] + geo.s - Math.max(6, geo.s * 0.14))
+        .style('font-size', `${Math.max(10, Math.round(geo.s * 0.22))}px`)
+        .text((d) => `#${d.j + 1}`);
+
       // Panel auxiliar del operador
       gAux.classed('visible', !!step.auxVisible);
-      gLabels.selectAll('text.aux-caption').classed('visible', !!step.auxVisible);
-      if (problem.aux) AUX[problem.aux.type].show(gAux, step, problem.aux.items);
+      const caption = gLabels.selectAll('text.aux-caption').classed('visible', !!step.auxVisible);
+      if (problem.aux) {
+        const A = AUX[problem.aux.type];
+        if (A.captionParams) caption.text(label(A.caption, A.captionParams(step)));
+        A.show(gAux, step, problem.aux.items, geo);
+      }
 
       // Animación: el gen "vuela" desde el padre hasta su hueco en el hijo
       if (dur > 0 && step.fly.length) {

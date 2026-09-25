@@ -3,7 +3,7 @@
  * reproductor, idioma y URL.
  *
  * URL: #lang=es                          → pantalla inicial
- *      #op=pmx&lang=es&p1=…&p2=…&c=…&s=…&step=…  → página de un operador
+ *      #op=pmx&lang=es&v=…&p1=…&p2=…&c=…&s=…&step=…  → página de un operador (v: variante, si la hay)
  */
 (function () {
   'use strict';
@@ -16,6 +16,7 @@
     opEyebrow: $('opEyebrow'), opTitle: $('opTitle'), opSubtitle: $('opSubtitle'),
     opSwitch: $('opSwitch'), vizLabel: $('vizLabel'), legend: $('legend'), dragHint: $('dragHint'),
     len: $('len'), lenOut: $('lenOut'), seed: $('seed'),
+    variantField: $('variantField'), variant: $('variant'), variantDesc: $('variantDesc'),
     btnRandom: $('btnRandom'), btnCuts: $('btnCuts'),
     manualForm: $('manualForm'), inP1: $('inP1'), inP2: $('inP2'), err: $('err'),
     btnReset: $('btnReset'), btnPrev: $('btnPrev'), btnPlay: $('btnPlay'), btnNext: $('btnNext'),
@@ -28,6 +29,7 @@
     lang: (navigator.language || '').toLowerCase().startsWith('en') ? 'en' : 'es',
     view: null,          // 'home' | 'op'
     opId: null,
+    variant: null,       // variante del operador, si tiene varias
     n: 8, seed: 0, p1: [], p2: [], cuts: [],
     result: null, step: 0,
     playing: false, speed: 1, errKey: null,
@@ -77,7 +79,7 @@
   // ---------- Vistas ----------
 
   const view = createPermutationView($('viz'), {
-    label: (key) => tOp(key),
+    label: (key, params) => tOp(key, params),
     duration: () => Math.round(750 / state.speed),
     onCutDrag: (i, g) => {
       const c = clampCut(i, g);
@@ -99,7 +101,7 @@
 
   function recompute(step) {
     stop();
-    state.result = spec().run(state.p1, state.p2, state.cuts);
+    state.result = spec().run(state.p1, state.p2, state.cuts, { variant: state.variant });
     view.setProblem({
       p1: state.p1, p2: state.p2, cuts: state.cuts,
       segment: !!spec().segment,
@@ -193,6 +195,16 @@
     segment: ['sw-segment', 'legendSegment'],
   };
 
+  // Enlace a otro operador de la misma representación con los mismos padres (y cortes, si usa los mismos),
+  // para comparar operadores sobre el mismo ejemplo.
+  function sameProblemHref(id) {
+    const target = G.operators[id] && G.operators[id].spec;
+    const q = new URLSearchParams([['op', id], ['lang', state.lang], ['p1', state.p1.join('-')], ['p2', state.p2.join('-')]]);
+    if (target && target.cuts === spec().cuts) q.set('c', state.cuts.join('-'));
+    q.set('s', String(state.seed));
+    return `#${q.toString()}`;
+  }
+
   function renderOpHeader() {
     const m = meta();
     const rep = registry.getRepresentation(m.representation);
@@ -209,7 +221,7 @@
       chip.className = 'op-chip' + (current ? ' current' : '') + (op.ready ? '' : ' soon');
       chip.textContent = op.name[l];
       if (current) chip.setAttribute('aria-current', 'page');
-      else if (op.ready) chip.href = `#op=${op.id}&lang=${l}`;
+      else if (op.ready) chip.href = sameProblemHref(op.id);
       else {
         chip.title = t('comingSoon');
         const s = document.createElement('span');
@@ -233,6 +245,24 @@
     const hasCuts = spec().cuts > 0;
     el.btnCuts.hidden = !hasCuts;
     el.dragHint.hidden = !hasCuts;
+    renderVariants();
+  }
+
+  function renderVariants() {
+    const vs = spec().variants;
+    el.variantField.hidden = !vs;
+    el.variantDesc.hidden = !vs;
+    if (!vs) return;
+    const meta = G.content[state.opId].variants;
+    const l = state.lang;
+    el.variant.replaceChildren(...vs.map((v) => {
+      const o = document.createElement('option');
+      o.value = v;
+      o.textContent = meta[v].name[l];
+      return o;
+    }));
+    el.variant.value = state.variant;
+    el.variantDesc.textContent = meta[state.variant].desc[l];
   }
 
   // ---------- Idioma ----------
@@ -278,8 +308,13 @@
     el.homeView.hidden = true;
     el.opView.hidden = false;   // visible antes de dibujar, para medir el ancho disponible
 
-    if (!learn) learn = createLearnPanel({ content: G.content[id], t: (k, p) => t(k, p), lang: () => state.lang });
-    else learn.setContent(G.content[id]);
+    const vs = impl().spec.variants;
+    const v = q.get('v');
+    state.variant = vs ? (vs.indexOf(v) !== -1 ? v : impl().spec.defaultVariant) : null;
+    if (!learn) {
+      learn = createLearnPanel({ content: G.content[id], t: (k, p) => t(k, p), lang: () => state.lang });
+      learn.setVariant(state.variant);
+    } else learn.setContent(G.content[id], state.variant);
 
     const seed = parseInt(q.get('s'), 10);
     const p1 = (q.get('p1') || '').split('-').filter(Boolean).map(Number);
@@ -310,6 +345,7 @@
     if (state.view === 'op') {
       Object.assign(params, {
         op: state.opId,
+        v: state.variant || undefined,
         p1: state.p1.join('-'),
         p2: state.p2.join('-'),
         c: state.cuts.join('-'),
@@ -317,7 +353,7 @@
         step: String(state.step),
       });
     }
-    const order = ['op', 'lang', 'p1', 'p2', 'c', 's', 'step'].filter((k) => params[k] != null);
+    const order = ['op', 'lang', 'v', 'p1', 'p2', 'c', 's', 'step'].filter((k) => params[k] != null);
     const h = new URLSearchParams(order.map((k) => [k, params[k]])).toString();
     if (location.hash.replace(/^#/, '') === h) return;
     try { history.replaceState(null, '', `#${h}`); } catch (err) { /* file:// en algunos navegadores */ }
@@ -371,6 +407,13 @@
     if (n !== state.n || !validCuts(n, cuts)) cuts = randomCuts(R.mulberry32(state.seed), n);
     Object.assign(state, { n, p1, p2, cuts });
     recompute(0);
+  });
+
+  el.variant.addEventListener('change', () => {
+    state.variant = el.variant.value;
+    el.variantDesc.textContent = G.content[state.opId].variants[state.variant].desc[state.lang];
+    learn.setVariant(state.variant);
+    recompute(state.step);   // mismo paso, para comparar variantes
   });
 
   el.speed.addEventListener('input', () => {
