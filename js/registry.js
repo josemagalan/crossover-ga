@@ -19,21 +19,41 @@
       operators: [
         {
           id: 'one-point',
+          ready: true,
+          subtitle: {
+            es: 'Cruce en un punto: los hijos intercambian las colas a partir del corte',
+            en: 'One-point crossover: the children swap tails from the cut point',
+          },
           name: { es: 'Cruce en un punto', en: 'One-point crossover' },
           summary: { es: 'Se corta por un punto y los hijos intercambian las colas.', en: 'Cut at one point; the children swap tails.' },
         },
         {
           id: 'two-point',
+          ready: true,
+          subtitle: {
+            es: 'Cruce en dos puntos: los hijos intercambian el tramo entre los cortes',
+            en: 'Two-point crossover: the children swap the stretch between the cuts',
+          },
           name: { es: 'Cruce en dos puntos', en: 'Two-point crossover' },
           summary: { es: 'Los hijos intercambian el segmento entre dos cortes.', en: 'The children swap the segment between two cuts.' },
         },
         {
           id: 'n-point',
+          ready: true,
+          subtitle: {
+            es: 'Cruce en n puntos: con cada corte, los hijos cambian de padre',
+            en: 'N-point crossover: at every cut, the children switch parent',
+          },
           name: { es: 'Cruce en n puntos', en: 'N-point crossover' },
           summary: { es: 'Con n cortes, cada tramo alterna el padre del que se copia.', en: 'With n cuts, each stretch alternates the parent it is copied from.' },
         },
         {
           id: 'uniform-binary',
+          ready: true,
+          subtitle: {
+            es: 'Cruce uniforme: cada posición se intercambia al azar con probabilidad p',
+            en: 'Uniform crossover: each position is swapped at random with probability p',
+          },
           name: { es: 'Cruce uniforme', en: 'Uniform crossover' },
           summary: { es: 'Una máscara aleatoria decide de qué padre sale cada gen.', en: 'A random mask decides which parent each gene comes from.' },
         },

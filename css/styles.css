@@ -280,6 +280,7 @@ input[type="number"], input[type="text"], select {
 }
 input[type="number"] { width: 110px; font-variant-numeric: tabular-nums; }
 select { min-width: 220px; max-width: 100%; cursor: pointer; }
+.params-box { display: flex; flex-wrap: wrap; gap: 14px 24px; }
 .variant-desc { margin-top: 10px; max-width: 80ch; }
 a:focus-visible, select:focus-visible, input:focus-visible, button:focus-visible, summary:focus-visible, .handle:focus-visible {
   outline: 3px solid var(--accent);
@@ -421,6 +422,13 @@ summary {
 .link-head { fill: var(--ink); }
 .miss-rect { fill: var(--card); stroke: var(--conflict); stroke-width: 2.5; stroke-dasharray: 5 3; }
 .miss-text { text-anchor: middle; font-weight: 700; fill: var(--ink); }
+.mcell-rect { fill: transparent; stroke: var(--line); stroke-width: 2; stroke-dasharray: 4 3; }
+.mcell-bit { text-anchor: middle; font-weight: 700; fill: var(--muted); font-variant-numeric: tabular-nums; }
+.mcell.shown .mcell-rect { stroke: var(--ink); stroke-dasharray: none; fill: var(--card); }
+.mcell.shown .mcell-bit { fill: var(--ink); }
+.mcell.shown.one .mcell-rect { fill: var(--ink); }
+.mcell.shown.one .mcell-bit { fill: var(--card); }
+.mcell.active .mcell-rect { stroke: var(--accent); stroke-width: 4; }
 .slot-num { text-anchor: middle; font-weight: 600; fill: var(--muted); font-variant-numeric: tabular-nums; pointer-events: none; }
 
 @keyframes shake {
@@ -514,6 +522,7 @@ summary {
 .sw-mapped { background: repeating-linear-gradient(45deg, var(--p1) 0 5px, color-mix(in srgb, var(--p1) 45%, white) 5px 9px); }
 .sw-conflict { border: 4px solid var(--conflict); }
 .sw-segment { background: var(--band); border: 2px dashed var(--ink); }
+.sw-mask { background: var(--ink); }
 .sw-link { width: 24px; height: 12px; border-radius: 0; border-bottom: 3px solid var(--ink); border-right: 3px solid var(--ink); transform: skewX(-20deg); }
 
 /* Para saber más */

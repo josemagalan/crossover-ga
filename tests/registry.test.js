@@ -9,8 +9,9 @@ const path = require('node:path');
 const registry = require('../js/registry.js');
 const i18n = require('../js/i18n.js');
 const rng = require('../js/rng.js');
+const B = require('../js/operators/bin-utils.js');
 
-const LEGEND_KEYS = ['p1', 'p2', 'mapped', 'conflict', 'segment', 'link'];
+const LEGEND_KEYS = ['p1', 'p2', 'mapped', 'conflict', 'segment', 'link', 'mask'];
 const ops = registry.representations.flatMap((rep) => rep.operators.map((op) => Object.assign({ rep }, op)));
 
 test('ids únicos y textos en español e inglés', () => {
@@ -36,20 +37,26 @@ for (const op of ops.filter((o) => o.ready)) {
     assert.equal(content.id, op.id);
     assert.ok(op.subtitle && op.subtitle.es && op.subtitle.en);
     assert.ok(Array.isArray(spec.legend) && spec.legend.every((k) => LEGEND_KEYS.includes(k)));
-    assert.ok(Number.isInteger(spec.cuts) && spec.cuts >= 0);
+    assert.ok((Number.isInteger(spec.cuts) && spec.cuts >= 0) || spec.cuts === 'k');
 
     // Cada clave de texto que emite la traza existe en la narración del operador (o en la interfaz general)
     const r = rng.mulberry32(99);
     const keys = new Set();
+    const gen = op.rep.id === 'binary' ? (n) => B.randomBits(r, n) : (n) => rng.randomPermutation(r, n);
     for (const variant of spec.variants || [undefined]) {
       for (let t = 0; t < 200; t++) {
         const n = rng.randInt(r, 5, 12);
-        const cuts = spec.cuts === 2 ? rng.randomCuts(r, n) : spec.cuts === 1 ? [rng.randInt(r, 1, n - 1)] : [];
-        const res = spec.run(rng.randomPermutation(r, n), rng.randomPermutation(r, n), cuts, { variant });
+        const params = {};
+        (spec.params || []).forEach((pr) => { params[pr.id] = pr.id === 'k' ? rng.randInt(r, 1, Math.min(pr.max, n - 1)) : pr.default; });
+        let cuts = [];
+        if (spec.cuts === 2) cuts = rng.randomCuts(r, n);
+        else if (spec.cuts === 1) cuts = [rng.randInt(r, 1, n - 1)];
+        else if (spec.cuts === 'k') cuts = rng.shuffle(r, Array.from({ length: n - 1 }, (_, i) => i + 1)).slice(0, params.k).sort((a, b) => a - b);
+        const res = spec.run(gen(n), gen(n), cuts, { variant, seed: t + 1, params });
         res.steps.forEach((s) => keys.add(s.text.key));
       }
     }
-    const legendLabels = { mapped: 'legendMapped', link: 'legendLink' };
+    const legendLabels = { mapped: 'legendMapped', link: 'legendLink', mask: 'legendMask' };
     for (const lang of ['es', 'en']) {
       const has = (k) => (content.narration[lang] && content.narration[lang][k] != null) || i18n.dict[lang][k] != null;
       keys.forEach((k) => assert.ok(has(k), `${lang}: falta el texto «${k}»`));

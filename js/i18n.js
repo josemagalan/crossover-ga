@@ -19,7 +19,8 @@
       allOperators: 'Todos los operadores',
       sameRepresentation: 'Cruces de esta representación',
       svgLabel: 'Visualización paso a paso: {name}',
-      manualHint: 'Números del 1 al n separados por comas o espacios (n entre 5 y 12).',
+      manualHint_permutation: 'Números del 1 al n separados por comas o espacios (n entre 5 y 12).',
+      manualHint_binary: 'Ceros y unos, seguidos o separados por espacios (entre 5 y 12 bits).',
       pseudoFileSuffix: 'pseudocodigo.txt',
       variant: 'Variante',
       drawAgain: 'Sortear de nuevo',
@@ -71,6 +72,7 @@
       errLength: 'Los dos padres deben tener la misma longitud.',
       errRange: 'La longitud debe estar entre 5 y 12.',
       errPerm: 'Cada padre debe contener los números 1…n exactamente una vez.',
+      errBits: 'Cada padre debe contener solo ceros y unos.',
     },
     en: {
       brand: 'Crossover in genetic algorithms',
@@ -85,7 +87,8 @@
       allOperators: 'All operators',
       sameRepresentation: 'Crossovers for this representation',
       svgLabel: 'Step-by-step visualisation: {name}',
-      manualHint: 'Numbers 1 to n separated by commas or spaces (n between 5 and 12).',
+      manualHint_permutation: 'Numbers 1 to n separated by commas or spaces (n between 5 and 12).',
+      manualHint_binary: 'Zeros and ones, together or separated by spaces (between 5 and 12 bits).',
       pseudoFileSuffix: 'pseudocode.txt',
       variant: 'Variant',
       drawAgain: 'Draw again',
@@ -137,6 +140,7 @@
       errLength: 'Both parents must have the same length.',
       errRange: 'Length must be between 5 and 12.',
       errPerm: 'Each parent must contain the numbers 1…n exactly once.',
+      errBits: 'Each parent must contain only zeros and ones.',
     },
   };
 

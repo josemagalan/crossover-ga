@@ -54,6 +54,34 @@
       },
     },
 
+    // Representación binaria: máscara de cruce, una celda bajo cada columna de genes.
+    mask: {
+      caption: 'maskCaption',
+      draw() {},
+      show(g, step, items, geo) {
+        const shown = new Set(step.maskShown || []);
+        const act = step.auxActive || [];
+        const h = geo.auxSq;
+        const cells = g.selectAll('g.mcell')
+          .data(items.map((bit, i) => ({ bit, i })), (d) => d.i)
+          .join((enter) => {
+            const c = enter.append('g').attr('class', 'mcell');
+            c.append('rect').attr('class', 'mcell-rect');
+            c.append('text').attr('class', 'mcell-bit');
+            return c;
+          });
+        const x = (i) => geo.x0 + i * geo.cell + (geo.cell - geo.s) / 2;
+        cells.attr('transform', (d) => `translate(${x(d.i)},${geo.yAux})`)
+          .classed('shown', (d) => shown.has(d.i))
+          .classed('one', (d) => d.bit === 1)
+          .classed('active', (d) => act.indexOf(d.i) !== -1 && act.length < items.length);
+        cells.select('.mcell-rect').attr('width', geo.s).attr('height', h).attr('rx', 5);
+        cells.select('.mcell-bit').attr('x', geo.s / 2).attr('y', h / 2).attr('dy', '0.36em')
+          .style('font-size', `${Math.round(h * 0.55)}px`)
+          .text((d) => (shown.has(d.i) ? d.bit : '?'));
+      },
+    },
+
     // CX: ciclos encontrados hasta ahora, con el padre del que los toma el Hijo 1.
     cycles: {
       caption: 'cycleList',
@@ -331,13 +359,16 @@
         { id: 'parents', y0: geo.rowY.p1 - pad, y1: geo.rowY.p2 + geo.s + pad },
         { id: 'children', y0: geo.rowY.c1 - pad, y1: geo.rowY.c2 + geo.s + pad },
       ];
-      const hasSegment = problem.segment && cuts.length === 2;
+      // Tramos sombreados: los que indique el operador o, si no, el segmento entre dos cortes.
+      const ranges = problem.bands || (problem.segment && cuts.length === 2 ? [[cuts[0], cuts[1]]] : []);
+      const bandData = [];
+      ranges.forEach((r, k) => bands.forEach((b) => bandData.push({ id: `${b.id}-${k}`, y0: b.y0, y1: b.y1, from: r[0], to: r[1] })));
       gBands.selectAll('rect.band')
-        .data(hasSegment ? bands : [], (d) => d.id)
+        .data(bandData, (d) => d.id)
         .join('rect')
         .attr('class', 'band')
-        .attr('x', gapX(cuts[0]))
-        .attr('width', gapX(cuts[1]) - gapX(cuts[0]))
+        .attr('x', (d) => gapX(d.from))
+        .attr('width', (d) => gapX(d.to) - gapX(d.from))
         .attr('y', (d) => d.y0)
         .attr('height', (d) => d.y1 - d.y0)
         .attr('rx', 10);

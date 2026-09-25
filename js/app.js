@@ -3,7 +3,8 @@
  * reproductor, idioma y URL.
  *
  * URL: #lang=es                          → pantalla inicial
- *      #op=pmx&lang=es&v=…&p1=…&p2=…&c=…&s=…&step=…  → página de un operador (v: variante, si la hay)
+ *      #op=pmx&lang=es&v=…&r=…&k=…&p=…&p1=…&p2=…&c=…&s=…&step=…  → página de un operador
+ *      (v: variante; r: semilla del sorteo; k, p: parámetros del operador, si los tiene)
  */
 (function () {
   'use strict';
@@ -18,7 +19,8 @@
     len: $('len'), lenOut: $('lenOut'), seed: $('seed'),
     variantField: $('variantField'), variant: $('variant'), variantDesc: $('variantDesc'),
     btnRandom: $('btnRandom'), btnCuts: $('btnCuts'), btnDraw: $('btnDraw'),
-    manualForm: $('manualForm'), inP1: $('inP1'), inP2: $('inP2'), err: $('err'),
+    manualForm: $('manualForm'), inP1: $('inP1'), inP2: $('inP2'), err: $('err'), manualHint: $('manualHint'),
+    paramsBox: $('paramsBox'),
     btnReset: $('btnReset'), btnPrev: $('btnPrev'), btnPlay: $('btnPlay'), btnNext: $('btnNext'),
     counter: $('stepCounter'), barFill: $('barFill'),
     speed: $('speed'), speedOut: $('speedOut'),
@@ -30,7 +32,8 @@
     view: null,          // 'home' | 'op'
     opId: null,
     variant: null,       // variante del operador, si tiene varias
-    draw: 1,             // semilla del sorteo de las variantes aleatorias (CX)
+    draw: 1,             // semilla del sorteo de los operadores o variantes aleatorios (CX, uniforme)
+    params: {},          // parámetros del operador (k cortes, probabilidad p...)
     n: 8, seed: 0, p1: [], p2: [], cuts: [],
     result: null, step: 0,
     playing: false, speed: 1, errKey: null,
@@ -38,8 +41,12 @@
   let timer = null;
   let learn = null;
 
-  const fill = (s, params) => (params ? s.replace(/\{(\w+)\}/g, (m, p) => (params[p] != null ? params[p] : m)) : s);
-  const t = (key, params) => i18n.t(state.lang, key, params);
+  // Los números no enteros se muestran con dos decimales y la coma o el punto del idioma.
+  const fmtValue = (v) => (typeof v === 'number' && !Number.isInteger(v)
+    ? v.toLocaleString(state.lang === 'es' ? 'es-ES' : 'en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    : v);
+  const fill = (s, params) => (params ? s.replace(/\{(\w+)\}/g, (m, p) => (params[p] != null ? fmtValue(params[p]) : m)) : s);
+  const t = (key, params) => fill(i18n.t(state.lang, key), params);
 
   // Textos del operador actual (narración, leyenda propia...) con la interfaz general como respaldo.
   function tOp(key, params) {
@@ -51,33 +58,47 @@
   const impl = () => G.operators[state.opId];           // { spec, validateParents, ... }
   const spec = () => impl().spec;
   const meta = () => registry.getOperator(state.opId);   // nombre, resumen, subtítulo
+  const repId = () => meta().representation;             // 'permutation' | 'binary' | 'real'
 
   // ---------- Cortes (según cuántos declare el operador) ----------
 
+  // Número de cortes: fijo (0, 1, 2) o dado por el parámetro k (cruce en n puntos).
+  function cutsCount(n) {
+    const c = spec().cuts;
+    if (c !== 'k') return c;
+    return Math.max(1, Math.min(state.params.k || 1, (n || state.n) - 1));
+  }
+  const pmxStyleCuts = () => spec().cuts === 2;   // dos cortes [c1, c2): se admite c1 = 0 o c2 = n
+
   function validCuts(n, cuts) {
-    const k = spec().cuts;
+    const k = cutsCount(n);
     if (!Array.isArray(cuts) || cuts.length !== k) return false;
     if (k === 0) return true;
-    if (k === 1) return Number.isInteger(cuts[0]) && cuts[0] >= 1 && cuts[0] <= n - 1;
-    const [c1, c2] = cuts;
-    return Number.isInteger(c1) && Number.isInteger(c2) && c1 >= 0 && c2 <= n && c2 - c1 >= 1 && c2 - c1 <= n - 1;
+    if (pmxStyleCuts()) {
+      const [c1, c2] = cuts;
+      return Number.isInteger(c1) && Number.isInteger(c2) && c1 >= 0 && c2 <= n && c2 - c1 >= 1 && c2 - c1 <= n - 1;
+    }
+    return cuts.every((c, i) => Number.isInteger(c) && c >= 1 && c <= n - 1 && (i === 0 || c > cuts[i - 1]));
   }
 
   function randomCuts(rng, n) {
-    if (spec().cuts === 2) return R.randomCuts(rng, n);
-    if (spec().cuts === 1) return [R.randInt(rng, 1, n - 1)];
-    return [];
+    const k = cutsCount(n);
+    if (pmxStyleCuts()) return R.randomCuts(rng, n);
+    if (k === 0) return [];
+    return R.shuffle(rng, Array.from({ length: n - 1 }, (_, i) => i + 1)).slice(0, k).sort((a, b) => a - b);
   }
 
   // Posición válida más cercana a la pedida al arrastrar el corte i.
   function clampCut(i, g) {
     const n = state.n;
     const c = state.cuts.slice();
-    if (spec().cuts === 2) {
+    if (pmxStyleCuts()) {
       if (i === 0) c[0] = Math.max(0, c[1] - (n - 1), Math.min(g, c[1] - 1));
       else c[1] = Math.min(n, c[0] + (n - 1), Math.max(g, c[0] + 1));
-    } else if (spec().cuts === 1) {
-      c[0] = Math.max(1, Math.min(n - 1, g));
+    } else {
+      const lo = i > 0 ? c[i - 1] + 1 : 1;
+      const hi = i < c.length - 1 ? c[i + 1] - 1 : n - 1;
+      c[i] = Math.max(lo, Math.min(hi, g));
     }
     return c;
   }
@@ -97,21 +118,29 @@
 
   // ---------- Problema ----------
 
+  // Padres aleatorios según la representación del operador.
+  const GENERATORS = {
+    permutation: (r, n) => R.randomPermutation(r, n),
+    binary: (r, n) => G.binUtils.randomBits(r, n),
+  };
+
   function generate(seed, n) {
     const r = R.mulberry32(seed);
-    const p1 = R.randomPermutation(r, n);
-    let p2 = R.randomPermutation(r, n);
-    while (p2.join() === p1.join()) p2 = R.randomPermutation(r, n);
+    const gen = GENERATORS[repId()];
+    const p1 = gen(r, n);
+    let p2 = gen(r, n);
+    while (p2.join() === p1.join()) p2 = gen(r, n);
     Object.assign(state, { seed, n, p1, p2, cuts: randomCuts(r, n) });
   }
 
   function recompute(step) {
     stop();
-    state.result = spec().run(state.p1, state.p2, state.cuts, { variant: state.variant, seed: state.draw });
+    state.result = spec().run(state.p1, state.p2, state.cuts, { variant: state.variant, seed: state.draw, params: state.params });
     view.setProblem({
       p1: state.p1, p2: state.p2, cuts: state.cuts,
       segment: !!spec().segment,
       links: !!spec().links,
+      bands: state.result.bands || null,
       aux: state.result.aux || null,
     });
     goTo(step || 0, false);
@@ -201,6 +230,7 @@
     conflict: ['sw-conflict', 'legendConflict'],
     segment: ['sw-segment', 'legendSegment'],
     link: ['sw-link', 'legendLink'],
+    mask: ['sw-mask', 'legendMask'],
   };
 
   // Enlace a otro operador de la misma representación con los mismos padres (y cortes, si usa los mismos),
@@ -208,7 +238,7 @@
   function sameProblemHref(id) {
     const target = G.operators[id] && G.operators[id].spec;
     const q = new URLSearchParams([['op', id], ['lang', state.lang], ['p1', state.p1.join('-')], ['p2', state.p2.join('-')]]);
-    if (target && target.cuts === spec().cuts) q.set('c', state.cuts.join('-'));
+    if (target && target.cuts === spec().cuts && target.cuts !== 'k') q.set('c', state.cuts.join('-'));
     q.set('s', String(state.seed));
     return `#${q.toString()}`;
   }
@@ -254,15 +284,50 @@
     el.btnCuts.hidden = !hasCuts;
     el.dragHint.hidden = !hasCuts;
     renderVariants();
+    renderParams();
+    el.manualHint.textContent = t(`manualHint_${repId()}`);
+    const ph = repId() === 'binary' ? ['1 1 0 0 1 0 0 1', '0 0 1 0 1 1 0 0'] : ['1 2 3 4 5 6 7 8', '3 7 5 1 6 8 2 4'];
+    el.inP1.placeholder = ph[0];
+    el.inP2.placeholder = ph[1];
   }
 
-  const usesDraw = () => !!(spec().randomVariants && spec().randomVariants.indexOf(state.variant) !== -1);
+  // Controles de los parámetros del operador (p. ej. número de cortes k, probabilidad p).
+  function renderParams() {
+    const ps = spec().params || [];
+    el.paramsBox.hidden = !ps.length;
+    el.paramsBox.replaceChildren(...ps.map((pr) => {
+      const id = `param-${pr.id}`;
+      const field = document.createElement('div');
+      field.className = 'field';
+      const lab = document.createElement('label');
+      lab.htmlFor = id;
+      lab.textContent = tOp(`param${pr.id.toUpperCase()}`);
+      const wrap = document.createElement('div');
+      wrap.className = 'range-wrap';
+      const input = document.createElement('input');
+      Object.assign(input, { type: 'range', id, min: pr.min, max: pr.id === 'k' ? Math.min(pr.max, state.n - 1) : pr.max, step: pr.step, value: state.params[pr.id] });
+      const out = document.createElement('output');
+      out.htmlFor = id;
+      out.textContent = fmtValue(state.params[pr.id]);
+      input.addEventListener('input', () => { out.textContent = fmtValue(Number(input.value)); });
+      input.addEventListener('change', () => {
+        state.params[pr.id] = Number(input.value);
+        if (pr.id === 'k') state.cuts = randomCuts(R.mulberry32((Date.now() ^ state.seed) >>> 0), state.n);
+        recompute(0);
+      });
+      wrap.append(input, out);
+      field.append(lab, wrap);
+      return field;
+    }));
+  }
+
+  const usesDraw = () => !!(spec().random || (spec().randomVariants && spec().randomVariants.indexOf(state.variant) !== -1));
 
   function renderVariants() {
     const vs = spec().variants;
     el.variantField.hidden = !vs;
     el.variantDesc.hidden = !vs;
-    el.btnDraw.hidden = true;
+    el.btnDraw.hidden = !usesDraw();
     if (!vs) return;
     const meta = G.content[state.opId].variants;
     const l = state.lang;
@@ -323,6 +388,11 @@
     const vs = impl().spec.variants;
     const v = q.get('v');
     state.variant = vs ? (vs.indexOf(v) !== -1 ? v : impl().spec.defaultVariant) : null;
+    state.params = {};
+    (impl().spec.params || []).forEach((pr) => {
+      const v = Number(q.get(pr.id));
+      state.params[pr.id] = Number.isFinite(v) && v >= pr.min && v <= pr.max ? v : pr.default;
+    });
     const r = parseInt(q.get('r'), 10);
     state.draw = Number.isFinite(r) && r > 0 ? r % 1000000 : R.newSeed() + 1;
     if (!learn) {
@@ -371,7 +441,8 @@
         step: String(state.step),
       });
     }
-    const order = ['op', 'lang', 'v', 'r', 'p1', 'p2', 'c', 's', 'step'].filter((k) => params[k] != null && params[k] !== '');
+    if (state.view === 'op') (spec().params || []).forEach((pr) => { params[pr.id] = String(state.params[pr.id]); });
+    const order = ['op', 'lang', 'v', 'r', 'k', 'p', 'p1', 'p2', 'c', 's', 'step'].filter((k) => params[k] != null && params[k] !== '');
     const h = new URLSearchParams(order.map((k) => [k, params[k]])).toString();
     if (location.hash.replace(/^#/, '') === h) return;
     try { history.replaceState(null, '', `#${h}`); } catch (err) { /* file:// en algunos navegadores */ }
@@ -389,7 +460,10 @@
 
   el.len.addEventListener('input', () => { el.lenOut.textContent = el.len.value; });
   el.len.addEventListener('change', () => {
-    generate(state.seed, Number(el.len.value));
+    const n = Number(el.len.value);
+    if (state.params.k && state.params.k > n - 1) state.params.k = n - 1;
+    generate(state.seed, n);
+    renderParams();
     recompute(0);
   });
   el.seed.addEventListener('change', () => {
@@ -414,7 +488,12 @@
     recompute(1);
   });
 
-  const parseList = (s) => s.trim().split(/[\s,;]+/).filter(Boolean).map(Number);
+  // Lista de números; en binaria también se admite una cadena seguida como 10110.
+  const parseList = (s) => {
+    const tokens = s.trim().split(/[\s,;]+/).filter(Boolean);
+    if (repId() === 'binary' && tokens.length === 1 && /^\d{2,}$/.test(tokens[0])) return tokens[0].split('').map(Number);
+    return tokens.map(Number);
+  };
   el.manualForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const p1 = parseList(el.inP1.value);
