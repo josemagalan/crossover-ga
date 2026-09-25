@@ -25,6 +25,40 @@
     ],
   };
 
+  // Narración de cada paso de la animación y textos propios de PMX (leyenda, panel auxiliar).
+  const narration = {
+    es: {
+      mappingTable: 'Tabla de correspondencias',
+      legendMapped: 'Obtenido por correspondencia',
+      intro: 'Partimos de dos padres, permutaciones de {n} elementos. Un cruce ingenuo (por ejemplo, en un punto) produciría hijos con genes repetidos; PMX está diseñado para que los hijos sigan siendo permutaciones válidas.',
+      segment: 'Se elige un segmento central: posiciones {from} a {to} ({len} genes).',
+      swap: 'Cada hijo recibe el segmento del otro padre: el Hijo 1 hereda el del Padre 2 y el Hijo 2, el del Padre 1.',
+      mapping: 'Los genes del segmento que comparten posición forman la tabla de correspondencias: {pairs}. La usaremos para resolver repeticiones.',
+      childStart: 'Completamos el Hijo {child} con los genes del Padre {parent} que quedan fuera del segmento, de izquierda a derecha.',
+      copy: 'Posición {pos}: el gen {v} del Padre {parent} no está todavía en el Hijo {child}, así que se copia directamente.',
+      conflict: 'Posición {pos}: el gen {v} ya está en el Hijo {child} (posición {segPos}, dentro del segmento). Copiarlo lo repetiría, así que consultamos la tabla de correspondencias.',
+      mapAgain: '{v} ↔ {w}, pero {w} también está ya en el Hijo {child} (posición {segPos}), así que seguimos la cadena.',
+      mapOk: '{v} ↔ {w}, y {w} todavía no está en el Hijo {child}: es el gen que buscamos.',
+      place: 'Colocamos {w} en la posición {pos} del Hijo {child}. Cadena seguida: {chain}.',
+      done: 'Resultado: los dos hijos son permutaciones válidas. El Hijo 1 conserva el segmento del Padre 2 y {k1} de {out} posiciones del Padre 1; el Hijo 2 conserva el segmento del Padre 1 y {k2} de {out} posiciones del Padre 2.',
+    },
+    en: {
+      mappingTable: 'Mapping table',
+      legendMapped: 'Obtained through the mapping',
+      intro: 'We start from two parents, permutations of {n} elements. A naive crossover (e.g. one-point) would produce children with repeated genes; PMX is designed so that the children remain valid permutations.',
+      segment: 'A central segment is chosen: positions {from} to {to} ({len} genes).',
+      swap: 'Each child receives the segment of the other parent: Child 1 inherits Parent 2\'s and Child 2 inherits Parent 1\'s.',
+      mapping: 'Segment genes sharing a position form the mapping table: {pairs}. We will use it to resolve repetitions.',
+      childStart: 'We complete Child {child} with the genes of Parent {parent} outside the segment, from left to right.',
+      copy: 'Position {pos}: gene {v} from Parent {parent} is not yet in Child {child}, so it is copied directly.',
+      conflict: 'Position {pos}: gene {v} is already in Child {child} (position {segPos}, inside the segment). Copying it would repeat it, so we look it up in the mapping table.',
+      mapAgain: '{v} ↔ {w}, but {w} is also already in Child {child} (position {segPos}), so we follow the chain.',
+      mapOk: '{v} ↔ {w}, and {w} is not yet in Child {child}: this is the gene we need.',
+      place: 'We place {w} at position {pos} of Child {child}. Chain followed: {chain}.',
+      done: 'Result: both children are valid permutations. Child 1 keeps Parent 2\'s segment and {k1} of {out} positions from Parent 1; Child 2 keeps Parent 1\'s segment and {k2} of {out} positions from Parent 2.',
+    },
+  };
+
   // Pseudocódigo: cada línea tiene un id para poder resaltarla desde la animación.
   const pseudocode = {
     es: [
@@ -298,6 +332,7 @@ if (typeof module !== 'undefined' && module.exports) {
   const api = {
     id: 'pmx',
     explanation,
+    narration,
     pseudocode,
     keywords,
     stepLines,

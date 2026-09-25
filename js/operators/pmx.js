@@ -53,15 +53,15 @@
     const steps = [];
 
     let segmentVisible = false;
-    let pairsVisible = false;
+    let auxVisible = false;   // panel auxiliar: la tabla de correspondencias
 
     // Añade un paso con una copia profunda del estado actual.
     function snap(step) {
       steps.push(Object.assign({
         children: children.map((c) => c.map((g) => (g ? Object.assign({}, g) : null))),
         segmentVisible,
-        pairsVisible,
-        activePairs: [],
+        auxVisible,
+        auxActive: [],   // índices de los pares resaltados
         highlight: {},   // { p1:[pos], p2:[pos], c1:[pos], c2:[pos] }
         conflict: {},    // { c1:[pos] } genes duplicados
         slot: {},        // { c1:[pos] } hueco que se está rellenando
@@ -89,11 +89,11 @@
     snap({ type: 'swap', text: { key: 'swap' }, fly: swapFly, highlight: { c1: seg, c2: seg } });
 
     // Tabla de correspondencias
-    pairsVisible = true;
+    auxVisible = true;
     snap({
       type: 'mapping',
       text: { key: 'mapping', params: { pairs: pairs.map((p) => `${p.a} ↔ ${p.b}`).join(', ') } },
-      activePairs: pairs.map((_, k) => k),
+      auxActive: pairs.map((_, k) => k),
       highlight: { p1: seg, p2: seg },
     });
 
@@ -149,7 +149,7 @@
               type: 'mapStep',
               child: k,
               text: { key: 'mapAgain', params: { v, w, child: k + 1, segPos: j2 + 1 } },
-              activePairs: [pairIdx],
+              auxActive: [pairIdx],
               highlight: { p1: [j], p2: [j] },
               conflict: { [childRow]: [j2] },
               slot: { [childRow]: [i] },
@@ -162,7 +162,7 @@
               type: 'mapStep',
               child: k,
               text: { key: 'mapOk', params: { v, w, child: k + 1 } },
-              activePairs: [pairIdx],
+              auxActive: [pairIdx],
               highlight: { p1: [j], p2: [j] },
               slot: { [childRow]: [i] },
               chain: chain.slice(),
@@ -191,10 +191,22 @@
       text: { key: 'done', params: { k1: kept1, k2: kept2, out: outside.length } },
     });
 
-    return { children: [c1v, c2v], steps, pairs, segment: [c1, c2] };
+    return { children: [c1v, c2v], steps, pairs, aux: { type: 'pairs', items: pairs }, segment: [c1, c2] };
   }
 
-  const api = { pmx, validateParents, validateCuts };
+  // Descripción del operador para la página: cuántos cortes usa, qué panel auxiliar
+  // muestra, qué entradas lleva la leyenda y cómo se ejecuta con una lista de cortes.
+  const spec = {
+    id: 'pmx',
+    representation: 'permutation',
+    cuts: 2,
+    segment: true,
+    aux: 'pairs',
+    legend: ['p1', 'p2', 'mapped', 'conflict', 'segment'],
+    run: (p1, p2, cuts) => pmx(p1, p2, cuts[0], cuts[1]),
+  };
+
+  const api = { pmx, validateParents, validateCuts, spec };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else ((root.GAX = root.GAX || {}).operators = root.GAX.operators || {}).pmx = api;
 })(typeof self !== 'undefined' ? self : this);

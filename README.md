@@ -6,6 +6,7 @@ Herramienta docente interactiva (D3.js) que ilustra paso a paso los operadores d
 
 ## Qué incluye
 
+- Pantalla inicial con los operadores clasificados por representación (binaria, real y permutacional).
 - Animación paso a paso del cruce, en español e inglés, con una explicación de cada paso.
 - Padres aleatorios (con semilla reproducible) o introducidos a mano, y puntos de corte que se arrastran con el ratón.
 - El ejemplo actual queda guardado en la URL, para proyectarlo en clase o compartirlo.
@@ -32,6 +33,7 @@ Comprueban el operador (el ejemplo de las transparencias y miles de casos aleato
 | Ruta | Contenido |
 | --- | --- |
 | `index.html`, `css/` | Página y estilos |
+| `js/registry.js`, `js/home.js` | Catálogo de representaciones y operadores; pantalla inicial |
 | `js/operators/` | Lógica de cada operador: función pura que devuelve los hijos y la traza de pasos |
 | `js/viz/` | Vistas D3 que dibujan esa traza |
 | `js/content/` | Contenido docente de cada operador: explicación, pseudocódigo, código descargable y referencias |

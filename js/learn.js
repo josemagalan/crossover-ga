@@ -6,7 +6,7 @@
   'use strict';
 
   function createLearnPanel(opts) {
-    const content = opts.content;   // contenido del operador (js/content/*.js)
+    let content = opts.content;     // contenido del operador (js/content/*.js)
     const t = opts.t;               // (key, params) => texto en el idioma actual
     const lang = opts.lang;         // () => 'es' | 'en'
 
@@ -138,7 +138,7 @@
       return kind === 'pseudo' ? content.getPseudocodeText(lang()) : content.getCode(kind, lang());
     }
     function filename() {
-      return kind === 'pseudo' ? t('pseudoFile') : content.codeTemplates[kind].filename;
+      return kind === 'pseudo' ? `${content.id}-${t('pseudoFileSuffix')}` : content.codeTemplates[kind].filename;
     }
 
     function flash(msg) {
@@ -233,8 +233,18 @@
       applyHighlight();
     }
 
+    // Cambia de operador: nuevo contenido, vuelta a la primera pestaña y al pseudocódigo.
+    function setContent(next) {
+      if (next === content) return;
+      content = next;
+      kind = 'pseudo';
+      currentLines = [];
+      selectTab(tabs[0]);
+      refresh();
+    }
+
     refresh();
-    return { refresh, setStep };
+    return { refresh, setStep, setContent };
   }
 
   (root.GAX = root.GAX || {}).createLearnPanel = createLearnPanel;

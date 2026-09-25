@@ -3,158 +3,175 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Cruce PMX · Algoritmos genéticos</title>
+  <title>Operadores de cruce · Algoritmos genéticos</title>
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
   <div class="wrap">
-    <header class="top">
-      <div class="heading">
-        <p class="eyebrow" data-i18n="eyebrow">Representación permutacional</p>
-        <h1 data-i18n="title">Cruce PMX</h1>
-        <p class="subtitle" data-i18n="subtitle">Partially Mapped Crossover</p>
-      </div>
+    <header class="topbar">
+      <a class="brand" href="#" id="brandLink">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span data-i18n="brand">Cruces en algoritmos genéticos</span>
+      </a>
       <div class="lang" role="group" aria-label="Idioma / Language">
         <button type="button" data-lang="es" aria-pressed="true">ES</button>
         <button type="button" data-lang="en" aria-pressed="false">EN</button>
       </div>
     </header>
 
-    <section class="card controls" aria-labelledby="controls-title">
-      <h2 id="controls-title" class="sr-only">Controles</h2>
-      <div class="control-row">
-        <div class="field">
-          <label for="len" data-i18n="length">Longitud</label>
-          <div class="range-wrap">
-            <input type="range" id="len" min="5" max="12" step="1" value="8">
-            <output id="lenOut" for="len">8</output>
+    <main id="homeView" hidden>
+      <section class="hero">
+        <p class="eyebrow" data-i18n="homeEyebrow">Herramienta docente</p>
+        <h1 data-i18n="homeTitle">Operadores de cruce en algoritmos genéticos</h1>
+        <p class="lead" data-i18n="homeLead"></p>
+      </section>
+      <div id="repGrid" class="rep-grid"></div>
+    </main>
+
+    <main id="opView" hidden>
+      <header class="op-head">
+        <a class="back" href="#" id="backLink"><span aria-hidden="true">←</span> <span data-i18n="allOperators">Todos los operadores</span></a>
+        <p class="eyebrow" id="opEyebrow"></p>
+        <h1 id="opTitle"></h1>
+        <p class="subtitle" id="opSubtitle"></p>
+        <nav class="op-switch" aria-labelledby="opSwitchLabel">
+          <span id="opSwitchLabel" class="op-switch-label" data-i18n="sameRepresentation">Cruces de esta representación</span>
+          <div id="opSwitch" class="op-switch-items"></div>
+        </nav>
+      </header>
+
+      <section class="card controls" aria-labelledby="controls-title">
+        <h2 id="controls-title" class="sr-only">Controles</h2>
+        <div class="control-row">
+          <div class="field">
+            <label for="len" data-i18n="length">Longitud</label>
+            <div class="range-wrap">
+              <input type="range" id="len" min="5" max="12" step="1" value="8">
+              <output id="lenOut" for="len">8</output>
+            </div>
+          </div>
+          <div class="field">
+            <label for="seed" data-i18n="seed">Semilla</label>
+            <input type="number" id="seed" min="0" max="999999" step="1" inputmode="numeric">
+          </div>
+          <div class="buttons">
+            <button type="button" id="btnRandom" class="btn primary" data-i18n="randomParents">Padres aleatorios</button>
+            <button type="button" id="btnCuts" class="btn" data-i18n="randomCuts">Cortes aleatorios</button>
           </div>
         </div>
-        <div class="field">
-          <label for="seed" data-i18n="seed">Semilla</label>
-          <input type="number" id="seed" min="0" max="999999" step="1" inputmode="numeric">
-        </div>
-        <div class="buttons">
-          <button type="button" id="btnRandom" class="btn primary" data-i18n="randomParents">Padres aleatorios</button>
-          <button type="button" id="btnCuts" class="btn" data-i18n="randomCuts">Cortes aleatorios</button>
-        </div>
-      </div>
-      <details id="manual">
-        <summary data-i18n="manualParents">Introducir padres a mano</summary>
-        <form id="manualForm" class="manual-form" novalidate>
-          <p class="hint" data-i18n="manualHint">Números del 1 al n separados por comas o espacios.</p>
-          <div class="manual-grid">
-            <label for="inP1" data-i18n="parent1">Padre 1</label>
-            <input type="text" id="inP1" autocomplete="off" spellcheck="false" placeholder="1 2 3 4 5 6 7 8">
-            <label for="inP2" data-i18n="parent2">Padre 2</label>
-            <input type="text" id="inP2" autocomplete="off" spellcheck="false" placeholder="3 7 5 1 6 8 2 4">
+        <details id="manual">
+          <summary data-i18n="manualParents">Introducir padres a mano</summary>
+          <form id="manualForm" class="manual-form" novalidate>
+            <p class="hint" data-i18n="manualHint">Números del 1 al n separados por comas o espacios.</p>
+            <div class="manual-grid">
+              <label for="inP1" data-i18n="parent1">Padre 1</label>
+              <input type="text" id="inP1" autocomplete="off" spellcheck="false" placeholder="1 2 3 4 5 6 7 8">
+              <label for="inP2" data-i18n="parent2">Padre 2</label>
+              <input type="text" id="inP2" autocomplete="off" spellcheck="false" placeholder="3 7 5 1 6 8 2 4">
+            </div>
+            <div class="manual-actions">
+              <button type="submit" class="btn primary" data-i18n="apply">Aplicar</button>
+              <p id="err" class="error" role="alert"></p>
+            </div>
+          </form>
+        </details>
+      </section>
+
+      <section class="card stage">
+        <svg id="viz" role="img" aria-labelledby="vizLabel">
+          <title id="vizLabel"></title>
+        </svg>
+        <p class="hint drag-hint" id="dragHint" data-i18n="dragHint">Arrastra los marcadores ◆ para mover los cortes.</p>
+
+        <div class="player">
+          <div class="player-buttons">
+            <button type="button" class="icon-btn" id="btnReset" data-i18n-title="reset" title="Inicio">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg>
+            </button>
+            <button type="button" class="icon-btn" id="btnPrev" data-i18n-title="prev" title="Anterior">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 5v14L6 12z"/></svg>
+            </button>
+            <button type="button" class="icon-btn play" id="btnPlay" data-i18n-title="play" title="Reproducir">
+              <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5v14l12-7z"/></svg>
+              <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+            </button>
+            <button type="button" class="icon-btn" id="btnNext" data-i18n-title="next" title="Siguiente">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5v14l11-7z"/></svg>
+            </button>
           </div>
-          <div class="manual-actions">
-            <button type="submit" class="btn primary" data-i18n="apply">Aplicar</button>
-            <p id="err" class="error" role="alert"></p>
+          <div class="progress">
+            <span id="stepCounter" class="counter">Paso 1 de 1</span>
+            <div class="bar"><div id="barFill" class="bar-fill"></div></div>
           </div>
-        </form>
-      </details>
-    </section>
-
-    <section class="card stage">
-      <svg id="viz" role="img" aria-labelledby="vizLabel">
-        <title id="vizLabel" data-i18n="svgLabel">Visualización del cruce PMX</title>
-      </svg>
-      <p class="hint drag-hint" data-i18n="dragHint">Arrastra los marcadores ◆ para mover los cortes.</p>
-
-      <div class="player">
-        <div class="player-buttons">
-          <button type="button" class="icon-btn" id="btnReset" data-i18n-title="reset" title="Inicio">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg>
-          </button>
-          <button type="button" class="icon-btn" id="btnPrev" data-i18n-title="prev" title="Anterior">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 5v14L6 12z"/></svg>
-          </button>
-          <button type="button" class="icon-btn play" id="btnPlay" data-i18n-title="play" title="Reproducir">
-            <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5v14l12-7z"/></svg>
-            <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
-          </button>
-          <button type="button" class="icon-btn" id="btnNext" data-i18n-title="next" title="Siguiente">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5v14l11-7z"/></svg>
-          </button>
-        </div>
-        <div class="progress">
-          <span id="stepCounter" class="counter">Paso 1 de 1</span>
-          <div class="bar"><div id="barFill" class="bar-fill"></div></div>
-        </div>
-        <div class="field speed">
-          <label for="speed" data-i18n="speed">Velocidad</label>
-          <input type="range" id="speed" min="0.5" max="2.5" step="0.25" value="1">
-          <output id="speedOut" for="speed">1×</output>
-        </div>
-      </div>
-
-      <div class="narration" aria-live="polite">
-        <p id="narration"></p>
-        <p id="chain" class="chain" hidden></p>
-      </div>
-
-      <ul class="legend">
-        <li><span class="sw sw-p1"></span><span data-i18n="legendP1">Gen del Padre 1</span></li>
-        <li><span class="sw sw-p2"></span><span data-i18n="legendP2">Gen del Padre 2</span></li>
-        <li><span class="sw sw-mapped"></span><span data-i18n="legendMapped">Obtenido por correspondencia</span></li>
-        <li><span class="sw sw-conflict"></span><span data-i18n="legendConflict">Gen repetido</span></li>
-        <li><span class="sw sw-segment"></span><span data-i18n="legendSegment">Segmento de cruce</span></li>
-      </ul>
-    </section>
-
-    <section class="card learn" aria-labelledby="learn-title">
-      <h2 id="learn-title" class="learn-title" data-i18n="learnTitle">Para saber más</h2>
-      <div class="tabs" role="tablist" aria-labelledby="learn-title">
-        <button type="button" role="tab" id="tab-explain" aria-controls="panel-explain" aria-selected="true" data-i18n="tabExplain">Explicación</button>
-        <button type="button" role="tab" id="tab-code" aria-controls="panel-code" aria-selected="false" tabindex="-1" data-i18n="tabCode">Pseudocódigo y código</button>
-        <button type="button" role="tab" id="tab-refs" aria-controls="panel-refs" aria-selected="false" tabindex="-1" data-i18n="tabRefs">Referencias</button>
-      </div>
-
-      <div role="tabpanel" id="panel-explain" aria-labelledby="tab-explain" class="panel" tabindex="0">
-        <div id="explainBody" class="prose"></div>
-      </div>
-
-      <div role="tabpanel" id="panel-code" aria-labelledby="tab-code" class="panel" hidden>
-        <div class="code-toolbar">
-          <div class="seg" role="group" data-i18n-aria="codeLang" aria-label="Lenguaje">
-            <button type="button" data-code="pseudo" aria-pressed="true" data-i18n="codePseudo">Pseudocódigo</button>
-            <button type="button" data-code="python" aria-pressed="false">Python</button>
-            <button type="button" data-code="javascript" aria-pressed="false">JavaScript</button>
-          </div>
-          <label id="syncWrap" class="sync">
-            <input type="checkbox" id="syncToggle" checked>
-            <span data-i18n="syncLabel">Resaltar el paso actual</span>
-          </label>
-          <div class="code-actions">
-            <span id="copyStatus" class="copy-status" role="status" aria-live="polite"></span>
-            <button type="button" id="btnCopy" class="btn" data-i18n="copyBtn">Copiar</button>
-            <button type="button" id="btnDownload" class="btn">Descargar</button>
+          <div class="field speed">
+            <label for="speed" data-i18n="speed">Velocidad</label>
+            <input type="range" id="speed" min="0.5" max="2.5" step="0.25" value="1">
+            <output id="speedOut" for="speed">1×</output>
           </div>
         </div>
-        <p id="codeHint" class="hint code-hint"></p>
-        <pre id="codeBlock" class="code" tabindex="0"></pre>
-      </div>
 
-      <div role="tabpanel" id="panel-refs" aria-labelledby="tab-refs" class="panel" hidden tabindex="0">
-        <p class="hint" data-i18n="refsIntro">Fuente original del operador y lecturas recomendadas.</p>
-        <ol id="refList" class="refs"></ol>
-      </div>
-    </section>
+        <div class="narration" aria-live="polite">
+          <p id="narration"></p>
+          <p id="chain" class="chain" hidden></p>
+        </div>
 
-    <footer class="foot">
-      <p class="hint" data-i18n="keysHint">← → avanzar/retroceder · Espacio reproducir/pausa</p>
-    </footer>
+        <ul class="legend" id="legend"></ul>
+      </section>
+
+      <section class="card learn" aria-labelledby="learn-title">
+        <h2 id="learn-title" class="learn-title" data-i18n="learnTitle">Para saber más</h2>
+        <div class="tabs" role="tablist" aria-labelledby="learn-title">
+          <button type="button" role="tab" id="tab-explain" aria-controls="panel-explain" aria-selected="true" data-i18n="tabExplain">Explicación</button>
+          <button type="button" role="tab" id="tab-code" aria-controls="panel-code" aria-selected="false" tabindex="-1" data-i18n="tabCode">Pseudocódigo y código</button>
+          <button type="button" role="tab" id="tab-refs" aria-controls="panel-refs" aria-selected="false" tabindex="-1" data-i18n="tabRefs">Referencias</button>
+        </div>
+
+        <div role="tabpanel" id="panel-explain" aria-labelledby="tab-explain" class="panel" tabindex="0">
+          <div id="explainBody" class="prose"></div>
+        </div>
+
+        <div role="tabpanel" id="panel-code" aria-labelledby="tab-code" class="panel" hidden>
+          <div class="code-toolbar">
+            <div class="seg" role="group" data-i18n-aria="codeLang" aria-label="Lenguaje">
+              <button type="button" data-code="pseudo" aria-pressed="true" data-i18n="codePseudo">Pseudocódigo</button>
+              <button type="button" data-code="python" aria-pressed="false">Python</button>
+              <button type="button" data-code="javascript" aria-pressed="false">JavaScript</button>
+            </div>
+            <label id="syncWrap" class="sync">
+              <input type="checkbox" id="syncToggle" checked>
+              <span data-i18n="syncLabel">Resaltar el paso actual</span>
+            </label>
+            <div class="code-actions">
+              <span id="copyStatus" class="copy-status" role="status" aria-live="polite"></span>
+              <button type="button" id="btnCopy" class="btn" data-i18n="copyBtn">Copiar</button>
+              <button type="button" id="btnDownload" class="btn">Descargar</button>
+            </div>
+          </div>
+          <p id="codeHint" class="hint code-hint"></p>
+          <pre id="codeBlock" class="code" tabindex="0"></pre>
+        </div>
+
+        <div role="tabpanel" id="panel-refs" aria-labelledby="tab-refs" class="panel" hidden tabindex="0">
+          <p class="hint" data-i18n="refsIntro">Fuente original del operador y lecturas recomendadas.</p>
+          <ol id="refList" class="refs"></ol>
+        </div>
+      </section>
+
+      <footer class="foot">
+        <p class="hint" data-i18n="keysHint">← → avanzar/retroceder · Espacio reproducir/pausa</p>
+      </footer>
+    </main>
   </div>
 
   <script src="vendor/d3.min.js"></script>
   <script src="js/rng.js"></script>
   <script src="js/i18n.js"></script>
+  <script src="js/registry.js"></script>
   <script src="js/operators/pmx.js"></script>
   <script src="js/viz/permutation-view.js"></script>
   <script src="js/content/pmx.js"></script>
   <script src="js/learn.js"></script>
+  <script src="js/home.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

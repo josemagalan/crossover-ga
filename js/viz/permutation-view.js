@@ -1,26 +1,68 @@
 /*
  * Vista D3 para operadores de cruce sobre permutaciones.
- * Dibuja padres, hijos, segmento, cortes arrastrables y tabla de correspondencias,
- * y anima cada paso de la traza que produce el operador.
+ * Dibuja padres, hijos, segmento, cortes arrastrables y, si el operador lo pide,
+ * un panel auxiliar entre padres e hijos (p. ej. la tabla de correspondencias de PMX).
+ * Anima cada paso de la traza que produce el operador.
  */
 (function (root) {
   'use strict';
   const d3 = root.d3;
   const W_WIDE = 1000;
   const CELL_MAX = 72;
-  const ROWS = ['p1', 'p2', 'c1', 'c2'];
+
+  // Paneles auxiliares: cada operador puede declarar uno (spec.aux) y la traza
+  // indica en cada paso si se ve (auxVisible) y qué elementos resalta (auxActive).
+  const AUX = {
+    pairs: {
+      caption: 'mappingTable',
+      draw(g, geo, items) {
+        const arrowW = 22;
+        const m = items.length;
+        const avail = geo.cell * geo.n;
+        // Reduce las fichas si el segmento es largo para que la tabla quepa en una fila.
+        const sq = Math.max(16, Math.min(geo.auxSq, (avail - (m - 1) * 6 - m * arrowW) / (2 * m)));
+        const chipW = sq * 2 + arrowW;
+        const gap = Math.max(6, Math.min(22, (avail - m * chipW) / Math.max(1, m - 1)));
+        const total = m * chipW + (m - 1) * gap;
+        const start = geo.x0 + (avail - total) / 2;
+        const chips = g.selectAll('g.pair')
+          .data(items.map((p, k) => Object.assign({ k }, p)), (d) => d.k)
+          .join((enter) => {
+            const c = enter.append('g').attr('class', 'pair');
+            c.append('rect').attr('class', 'pair-bg');
+            c.append('rect').attr('class', 'pair-a');
+            c.append('text').attr('class', 'pair-a-num ink-p1');
+            c.append('text').attr('class', 'pair-arrow').text('↔');
+            c.append('rect').attr('class', 'pair-b');
+            c.append('text').attr('class', 'pair-b-num ink-p2');
+            return c;
+          });
+        chips.attr('transform', (d) => `translate(${start + d.k * (chipW + gap)},${geo.yAux})`);
+        chips.select('.pair-bg').attr('x', -5).attr('y', -5).attr('width', chipW + 10).attr('height', sq + 10).attr('rx', 8);
+        chips.select('.pair-a').attr('width', sq).attr('height', sq).attr('rx', 5).style('fill', 'var(--p1)');
+        chips.select('.pair-b').attr('x', sq + arrowW).attr('width', sq).attr('height', sq).attr('rx', 5).style('fill', 'var(--p2)');
+        const fs = `${Math.round(sq * 0.5)}px`;
+        chips.select('.pair-a-num').attr('x', sq / 2).attr('y', sq / 2).attr('dy', '0.36em').style('font-size', fs).text((d) => d.a);
+        chips.select('.pair-b-num').attr('x', sq * 1.5 + arrowW).attr('y', sq / 2).attr('dy', '0.36em').style('font-size', fs).text((d) => d.b);
+        chips.select('.pair-arrow').attr('x', sq + arrowW / 2).attr('y', sq / 2).attr('dy', '0.36em').style('font-size', fs);
+      },
+      show(g, step, items) {
+        const act = step.auxActive || [];
+        g.selectAll('g.pair')
+          .classed('active', (d) => act.indexOf(d.k) !== -1 && act.length < items.length)
+          .classed('dim', (d) => act.length > 0 && act.indexOf(d.k) === -1);
+      },
+    },
+  };
 
   function createPermutationView(svgEl, opts) {
     const svg = d3.select(svgEl);
     const label = opts.label;                 // (key) => texto traducido
     const duration = opts.duration;           // () => ms de animación
-    const onCutsChange = opts.onCutsChange;   // (c1, c2) => void
+    const onCutDrag = opts.onCutDrag;         // (índice del corte, hueco deseado) => void
 
     let geo = null;
-    let p1 = [];
-    let p2 = [];
-    let cuts = [0, 0];
-    let pairs = [];
+    let problem = null;   // { p1, p2, cuts: [..], segment: bool, aux: { type, items } | null }
     let current = null;
 
     // Patrones rayados para los genes obtenidos por correspondencia
@@ -42,11 +84,11 @@
     const gSlots = svg.append('g').attr('class', 'slots');
     const gParents = svg.append('g').attr('class', 'parents');
     const gChildren = svg.append('g').attr('class', 'children');
-    const gPairs = svg.append('g').attr('class', 'pairs');
+    const gAux = svg.append('g').attr('class', 'aux');
     const gGhost = svg.append('g').attr('class', 'ghosts');
     const gHandles = svg.append('g').attr('class', 'handles');
 
-    function layout(n) {
+    function layout(n, hasAux) {
       const compact = svgEl.clientWidth > 0 && svgEl.clientWidth < 640;
       const left = compact ? 44 : 128;
       const right = compact ? 8 : 16;
@@ -61,12 +103,12 @@
       const gap = 14;
       const yP1 = 58;
       const yP2 = yP1 + s + gap;
-      const yPairs = yP2 + s + 52;
-      const pairSq = Math.round(Math.min(34, s * 0.62));
-      const yC1 = yPairs + pairSq + 36;
+      const yAux = yP2 + s + 52;
+      const auxSq = Math.round(Math.min(34, s * 0.62));
+      const yC1 = hasAux ? yAux + auxSq + 36 : yP2 + s + 44;
       const yC2 = yC1 + s + gap;
       const H = yC2 + s + 18;
-      return { W, n, compact, left, cell, s, x0, yHandle, yIdx, yPairs, pairSq, H, rowY: { p1: yP1, p2: yP2, c1: yC1, c2: yC2 } };
+      return { W, n, compact, left, cell, s, x0, yHandle, yIdx, yAux, auxSq, H, rowY: { p1: yP1, p2: yP2, c1: yC1, c2: yC2 } };
     }
 
     const geneX = (i) => geo.x0 + i * geo.cell + (geo.cell - geo.s) / 2;
@@ -96,22 +138,24 @@
       }
     }
 
-    function setProblem(np1, np2, c1, c2, npairs) {
-      const sizeChanged = !geo || geo.n !== np1.length;
-      p1 = np1; p2 = np2; cuts = [c1, c2]; pairs = npairs;
-      geo = layout(p1.length);
+    function setProblem(np) {
+      const sizeChanged = !geo || geo.n !== np.p1.length;
+      const auxChanged = !problem || (problem.aux && problem.aux.type) !== (np.aux && np.aux.type);
+      problem = np;
+      geo = layout(np.p1.length, !!np.aux);
       svg.attr('viewBox', `0 0 ${geo.W} ${geo.H}`);
       if (sizeChanged) {
         gParents.selectAll('*').remove();
         gChildren.selectAll('*').remove();
         gSlots.selectAll('*').remove();
       }
+      if (auxChanged) gAux.selectAll('*').remove();
       drawLabels();
       drawIndices();
       drawParents();
       drawSlots();
       drawCuts();
-      drawPairs();
+      if (np.aux) AUX[np.aux.type].draw(gAux, geo, np.aux.items);
     }
 
     function drawLabels() {
@@ -128,14 +172,14 @@
         .attr('y', (d) => geo.rowY[d.row] + geo.s / 2)
         .attr('dy', '0.35em')
         .text((d) => label(d.key + short));
-      gLabels.selectAll('text.pairs-caption')
-        .data([0])
+      gLabels.selectAll('text.aux-caption')
+        .data(problem.aux ? [AUX[problem.aux.type].caption] : [])
         .join('text')
-        .attr('class', 'pairs-caption')
-        .classed('visible', !!(current && current.pairsVisible))
+        .attr('class', 'aux-caption')
+        .classed('visible', !!(current && current.auxVisible))
         .attr('x', geo.x0 + (geo.cell * geo.n) / 2)
-        .attr('y', geo.yPairs - 16)
-        .text(label('mappingTable'));
+        .attr('y', geo.yAux - 16)
+        .text((key) => label(key));
     }
 
     function drawIndices() {
@@ -150,8 +194,8 @@
 
     function drawParents() {
       const data = [];
-      p1.forEach((v, pos) => data.push({ row: 'p1', pos, v, origin: 'p1', kind: 'parent' }));
-      p2.forEach((v, pos) => data.push({ row: 'p2', pos, v, origin: 'p2', kind: 'parent' }));
+      problem.p1.forEach((v, pos) => data.push({ row: 'p1', pos, v, origin: 'p1', kind: 'parent' }));
+      problem.p2.forEach((v, pos) => data.push({ row: 'p2', pos, v, origin: 'p2', kind: 'parent' }));
       gParents.selectAll('g.gene')
         .data(data, (d) => `${d.row}-${d.pos}`)
         .join('g')
@@ -174,13 +218,15 @@
     }
 
     function drawCuts() {
+      const cuts = problem.cuts;
       const pad = 10;
       const bands = [
         { id: 'parents', y0: geo.rowY.p1 - pad, y1: geo.rowY.p2 + geo.s + pad },
         { id: 'children', y0: geo.rowY.c1 - pad, y1: geo.rowY.c2 + geo.s + pad },
       ];
+      const hasSegment = problem.segment && cuts.length === 2;
       gBands.selectAll('rect.band')
-        .data(bands, (d) => d.id)
+        .data(hasSegment ? bands : [], (d) => d.id)
         .join('rect')
         .attr('class', 'band')
         .attr('x', gapX(cuts[0]))
@@ -190,7 +236,7 @@
         .attr('rx', 10);
 
       const lines = [];
-      [0, 1].forEach((h) => bands.forEach((b) => lines.push({ h, b })));
+      cuts.forEach((_, h) => bands.forEach((b) => lines.push({ h, b })));
       gCutLines.selectAll('line.cut')
         .data(lines, (d) => `${d.h}-${d.b.id}`)
         .join('line')
@@ -199,7 +245,7 @@
         .attr('y1', (d) => d.b.y0).attr('y2', (d) => d.b.y1);
 
       const handles = gHandles.selectAll('g.handle')
-        .data([0, 1], (d) => d)
+        .data(cuts.map((_, i) => i), (d) => d)
         .join((enter) => {
           const g = enter.append('g')
             .attr('class', 'handle')
@@ -222,27 +268,13 @@
       handles.select('.handle-stem').attr('y1', 10).attr('y2', geo.rowY.p1 - 10 - geo.yHandle);
     }
 
-    function clampCuts(h, g) {
-      const n = geo.n;
-      let [c1, c2] = cuts;
-      if (h === 0) c1 = Math.max(0, c2 - (n - 1), Math.min(g, c2 - 1));
-      else c2 = Math.min(n, c1 + (n - 1), Math.max(g, c1 + 1));
-      return [c1, c2];
-    }
-
-    function requestCuts(c1, c2) {
-      if (c1 !== cuts[0] || c2 !== cuts[1]) onCutsChange(c1, c2);
-    }
-
     // Se crea una sola vez: redibujar no interrumpe un arrastre en curso.
     const dragBehavior = d3.drag()
       .container(svgEl)
       .subject((event) => ({ x: event.x, y: event.y }))
       .on('start', function () { d3.select(this).classed('dragging', true); })
       .on('drag', function (event, h) {
-        const g = Math.round((event.x - geo.x0) / geo.cell);
-        const [c1, c2] = clampCuts(h, g);
-        requestCuts(c1, c2);
+        onCutDrag(h, Math.round((event.x - geo.x0) / geo.cell));
       })
       .on('end', function () { d3.select(this).classed('dragging', false); });
 
@@ -251,41 +283,7 @@
       if (!delta) return;
       event.preventDefault();
       event.stopPropagation();
-      const [c1, c2] = clampCuts(h, cuts[h] + delta);
-      requestCuts(c1, c2);
-    }
-
-    function drawPairs() {
-      const arrowW = 22;
-      const m = pairs.length;
-      const avail = geo.cell * geo.n;
-      // Reduce las fichas si el segmento es largo para que la tabla quepa en una fila.
-      const sq = Math.max(16, Math.min(geo.pairSq, (avail - (m - 1) * 6 - m * arrowW) / (2 * m)));
-      const chipW = sq * 2 + arrowW;
-      const gap = Math.max(6, Math.min(22, (avail - m * chipW) / Math.max(1, m - 1)));
-      const total = m * chipW + (m - 1) * gap;
-      const start = geo.x0 + (avail - total) / 2;
-
-      const chips = gPairs.selectAll('g.pair')
-        .data(pairs.map((p, k) => Object.assign({ k }, p)), (d) => d.k)
-        .join((enter) => {
-          const g = enter.append('g').attr('class', 'pair');
-          g.append('rect').attr('class', 'pair-bg');
-          g.append('rect').attr('class', 'pair-a');
-          g.append('text').attr('class', 'pair-a-num ink-p1');
-          g.append('text').attr('class', 'pair-arrow').text('↔');
-          g.append('rect').attr('class', 'pair-b');
-          g.append('text').attr('class', 'pair-b-num ink-p2');
-          return g;
-        });
-      chips.attr('transform', (d) => `translate(${start + d.k * (chipW + gap)},${geo.yPairs})`);
-      chips.select('.pair-bg').attr('x', -5).attr('y', -5).attr('width', chipW + 10).attr('height', sq + 10).attr('rx', 8);
-      chips.select('.pair-a').attr('width', sq).attr('height', sq).attr('rx', 5).style('fill', 'var(--p1)');
-      chips.select('.pair-b').attr('x', sq + arrowW).attr('width', sq).attr('height', sq).attr('rx', 5).style('fill', 'var(--p2)');
-      const fs = `${Math.round(sq * 0.5)}px`;
-      chips.select('.pair-a-num').attr('x', sq / 2).attr('y', sq / 2).attr('dy', '0.36em').style('font-size', fs).text((d) => d.a);
-      chips.select('.pair-b-num').attr('x', sq * 1.5 + arrowW).attr('y', sq / 2).attr('dy', '0.36em').style('font-size', fs).text((d) => d.b);
-      chips.select('.pair-arrow').attr('x', sq + arrowW / 2).attr('y', sq / 2).attr('dy', '0.36em').style('font-size', fs);
+      onCutDrag(h, problem.cuts[h] + delta);
     }
 
     const has = (obj, row, pos) => !!(obj && obj[row] && obj[row].indexOf(pos) !== -1);
@@ -327,13 +325,10 @@
         .classed('active', (d) => has(step.highlight, d.row, d.pos))
         .classed('conflict', (d) => has(step.conflict, d.row, d.pos));
 
-      // Tabla de correspondencias
-      gPairs.classed('visible', step.pairsVisible);
-      gLabels.selectAll('text.pairs-caption').classed('visible', step.pairsVisible);
-      const act = step.activePairs || [];
-      gPairs.selectAll('g.pair')
-        .classed('active', (d) => act.indexOf(d.k) !== -1 && act.length < pairs.length)
-        .classed('dim', (d) => act.length > 0 && act.indexOf(d.k) === -1);
+      // Panel auxiliar del operador
+      gAux.classed('visible', !!step.auxVisible);
+      gLabels.selectAll('text.aux-caption').classed('visible', !!step.auxVisible);
+      if (problem.aux) AUX[problem.aux.type].show(gAux, step, problem.aux.items);
 
       // Animación: el gen "vuela" desde el padre hasta su hueco en el hijo
       if (dur > 0 && step.fly.length) {
@@ -366,10 +361,10 @@
     window.addEventListener('resize', () => {
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => {
-        if (!geo) return;
+        if (!geo || !problem) return;
         const compact = svgEl.clientWidth > 0 && svgEl.clientWidth < 640;
         if (compact !== geo.compact) {
-          setProblem(p1, p2, cuts[0], cuts[1], pairs);
+          setProblem(problem);
           if (current) show(current, { animate: false });
         }
       }, 150);
