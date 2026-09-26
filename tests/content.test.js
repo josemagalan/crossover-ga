@@ -33,11 +33,15 @@ const isPerm = (a, n) => a.length === n && new Set(a).size === n && a.every((v) 
  *   cutsK   f(p1, p2, cortes)                 n puntos
  *   pRng    f(p1, p2, p, azar)                uniforme (binario y real)
  *   lam     f(p1, p2, λ)                      aritmético
+ *   alphaRng f(p1, p2, α, azar)               BLX-α
+ *   etaRng  f(p1, p2, η, azar)                SBX
  *   vRng    f(p1, p2, variante, azar)         CX
  */
 function styleOf(spec) {
   if (spec.params && spec.params.some((p) => p.id === 'p')) return 'pRng';
   if (spec.params && spec.params.some((p) => p.id === 'lambda')) return 'lam';
+  if (spec.params && spec.params.some((p) => p.id === 'alpha')) return 'alphaRng';
+  if (spec.params && spec.params.some((p) => p.id === 'eta')) return 'etaRng';
   if (spec.cuts === 'k') return 'cutsK';
   if (spec.cuts === 0) return 'vRng';
   if (spec.cuts === 1) return 'cut1';
@@ -62,6 +66,8 @@ function makeCases(op, spec, count, seed, variant) {
     } else { c.cuts = []; }
     if (st === 'pRng') c.params.p = [0.1, 0.25, 0.5][cases.length % 3];
     if (st === 'lam') c.params.lambda = [0, 0.05, 0.25, 0.35, 0.5, 0.7, 1][cases.length % 7];
+    if (st === 'alphaRng') c.params.alpha = [0, 0.25, 0.5, 0.75, 1][cases.length % 5];
+    if (st === 'etaRng') c.params.eta = [1, 2, 5, 10, 20][cases.length % 5];
     const res = spec.run(p1, p2, c.cuts, { variant, seed: c.seed, params: c.params });
     c.expected = res.children;
     c.draws = res.draws || null;         // uniforme: números sorteados
@@ -86,6 +92,8 @@ function callJs(fn, c) {
     case 'cutsK': return fn(c.p1, c.p2, c.cuts);
     case 'pRng': return fn(c.p1, c.p2, c.params.p, scriptedJs(c));
     case 'lam': return fn(c.p1, c.p2, c.params.lambda);
+    case 'alphaRng': return fn(c.p1, c.p2, c.params.alpha, scriptedJs(c));
+    case 'etaRng': return fn(c.p1, c.p2, c.params.eta, scriptedJs(c));
     default: return fn(c.p1, c.p2, c.v, scriptedJs(c));
   }
 }
@@ -106,6 +114,8 @@ const PY_DRIVER = (moduleName, fnName) => [
   '    if st == "cutsK": return fn(c["p1"], c["p2"], c["cuts"])',
   '    if st == "pRng": return fn(c["p1"], c["p2"], c["params"]["p"], rng=Scripted(c))',
   '    if st == "lam": return fn(c["p1"], c["p2"], c["params"]["lambda"])',
+  '    if st == "alphaRng": return fn(c["p1"], c["p2"], c["params"]["alpha"], rng=Scripted(c))',
+  '    if st == "etaRng": return fn(c["p1"], c["p2"], c["params"]["eta"], rng=Scripted(c))',
   '    return fn(c["p1"], c["p2"], variant=c["v"], rng=Scripted(c))',
   'cases = json.load(sys.stdin)',
   'print(json.dumps([[list(h) for h in call(c)] for c in cases]))',

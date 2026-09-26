@@ -245,6 +245,7 @@
     link: ['sw-link', 'legendLink'],
     mask: ['sw-mask', 'legendMask'],
     blend: ['sw-blend', 'legendBlend'],
+    cloud: ['sw-cloud', 'legendCloud'],
   };
 
   // Enlace a otro operador de la misma representación con los mismos padres (y cortes, si usa los mismos),

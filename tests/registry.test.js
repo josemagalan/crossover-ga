@@ -12,7 +12,7 @@ const rng = require('../js/rng.js');
 const B = require('../js/operators/bin-utils.js');
 const U = require('../js/operators/real-utils.js');
 
-const LEGEND_KEYS = ['p1', 'p2', 'mapped', 'conflict', 'segment', 'link', 'mask', 'blend'];
+const LEGEND_KEYS = ['p1', 'p2', 'mapped', 'conflict', 'segment', 'link', 'mask', 'blend', 'cloud'];
 const ops = registry.representations.flatMap((rep) => rep.operators.map((op) => Object.assign({ rep }, op)));
 
 test('ids únicos y textos en español e inglés', () => {
@@ -49,7 +49,7 @@ for (const op of ops.filter((o) => o.ready)) {
       for (let t = 0; t < 200; t++) {
         const n = rng.randInt(r, 5, 12);
         const params = {};
-        (spec.params || []).forEach((pr) => { params[pr.id] = pr.id === 'k' ? rng.randInt(r, 1, Math.min(pr.max, n - 1)) : pr.id === 'lambda' ? [0, 0.3, 0.5, 1][t % 4] : pr.default; });
+        (spec.params || []).forEach((pr) => { params[pr.id] = pr.id === 'k' ? rng.randInt(r, 1, Math.min(pr.max, n - 1)) : pr.id === 'lambda' || pr.id === 'alpha' ? [0, 0.3, 0.5, 1][t % 4] : pr.id === 'eta' ? [1, 2, 5, 20][t % 4] : pr.default; });
         let cuts = [];
         if (spec.cuts === 2) cuts = rng.randomCuts(r, n);
         else if (spec.cuts === 1) cuts = [rng.randInt(r, 1, n - 1)];
@@ -58,7 +58,7 @@ for (const op of ops.filter((o) => o.ready)) {
         res.steps.forEach((s) => keys.add(s.text.key));
       }
     }
-    const legendLabels = { mapped: 'legendMapped', link: 'legendLink', mask: 'legendMask', blend: 'legendBlend' };
+    const legendLabels = { mapped: 'legendMapped', link: 'legendLink', mask: 'legendMask', blend: 'legendBlend', cloud: 'legendCloud' };
     for (const lang of ['es', 'en']) {
       const has = (k) => (content.narration[lang] && content.narration[lang][k] != null) || i18n.dict[lang][k] != null;
       keys.forEach((k) => assert.ok(has(k), `${lang}: falta el texto «${k}»`));

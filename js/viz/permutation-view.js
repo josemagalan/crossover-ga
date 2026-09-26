@@ -148,6 +148,74 @@
       },
     },
 
+    // BLX-α y SBX: los genes 1 y 2 como un punto en un plano, con una nube de otros
+    // hijos posibles (mismos padres, mismo parámetro) y los hijos concretos de esta traza.
+    cloud: {
+      caption: 'cloudCaption',
+      captionShort: 'cloudCaptionShort',
+      height: ({ compact }) => (compact ? 200 : 260),
+      draw() {},
+      show(g, step, items, geo, label, fmt) {
+        const h = geo.auxH;
+        const x0 = geo.x0;
+        const x1 = geo.x0 + geo.cell * geo.n;
+        const y0 = geo.yAux;
+        const padL = 46, padR = 14, padT = 14, padB = 26;
+        const c1 = (step.children[0][0] && step.children[0][1]) ? [step.children[0][0].v, step.children[0][1].v] : null;
+        const c2 = (step.children[1][0] && step.children[1][1]) ? [step.children[1][0].v, step.children[1][1].v] : null;
+        const xs = [items.p1[0], items.p2[0]].concat(items.cloud.map((p) => p[0])).concat(c1 ? [c1[0]] : []).concat(c2 ? [c2[0]] : []);
+        const ys = [items.p1[1], items.p2[1]].concat(items.cloud.map((p) => p[1])).concat(c1 ? [c1[1]] : []).concat(c2 ? [c2[1]] : []);
+        let xlo = Math.min.apply(null, xs), xhi = Math.max.apply(null, xs);
+        let ylo = Math.min.apply(null, ys), yhi = Math.max.apply(null, ys);
+        if (xhi - xlo < 1e-6) { xhi += 0.5; xlo -= 0.5; }
+        if (yhi - ylo < 1e-6) { yhi += 0.5; ylo -= 0.5; }
+        const xpad = (xhi - xlo) * 0.1, ypad = (yhi - ylo) * 0.1;
+        const xLo = xlo - xpad, xHi = xhi + xpad, yLo = ylo - ypad, yHi = yhi + ypad;
+        const X = (v) => x0 + padL + ((v - xLo) / (xHi - xLo)) * (x1 - x0 - padL - padR);
+        const Y = (v) => y0 + h - padB - ((v - yLo) / (yHi - yLo)) * (h - padT - padB);
+
+        // Marco de ejes con las etiquetas de los extremos (mínimo y máximo mostrados)
+        g.selectAll('rect.cloud-box').data([0]).join('rect').attr('class', 'cloud-box')
+          .attr('x', x0 + padL).attr('y', y0 + padT)
+          .attr('width', x1 - x0 - padL - padR).attr('height', h - padT - padB);
+        const ticks = [
+          { k: 'x0', x: x0 + padL, y: y0 + h - padB + 6, anchor: 'start', text: fmt(xlo) },
+          { k: 'x1', x: x1 - padR, y: y0 + h - padB + 6, anchor: 'end', text: fmt(xhi) },
+          { k: 'y0', x: x0 + padL - 6, y: y0 + h - padB, anchor: 'end', text: fmt(ylo) },
+          { k: 'y1', x: x0 + padL - 6, y: y0 + padT, anchor: 'end', text: fmt(yhi) },
+        ];
+        g.selectAll('text.cloud-tick').data(ticks, (d) => d.k).join('text')
+          .attr('class', 'cloud-tick')
+          .attr('x', (d) => d.x).attr('y', (d) => d.y)
+          .attr('text-anchor', (d) => d.anchor)
+          .attr('dy', (d) => (d.k[0] === 'x' ? '0.9em' : '0.32em'))
+          .text((d) => d.text);
+
+        // Nube de hijos posibles (mismos padres y parámetro, otros sorteos)
+        g.selectAll('circle.cloud-dot').data(items.cloud, (d, i) => i).join('circle')
+          .attr('class', 'cloud-dot')
+          .attr('cx', (d) => X(d[0])).attr('cy', (d) => Y(d[1]))
+          .attr('r', Math.max(2.5, Math.min(4, geo.s * 0.07)));
+
+        // Padres, como puntos fijos
+        const parents = [{ k: 'p1', v: items.p1, cls: 'cloud-p1' }, { k: 'p2', v: items.p2, cls: 'cloud-p2' }];
+        g.selectAll('circle.cloud-parent').data(parents, (d) => d.k).join('circle')
+          .attr('class', (d) => `cloud-parent ${d.cls}`)
+          .attr('cx', (d) => X(d.v[0])).attr('cy', (d) => Y(d.v[1]))
+          .attr('r', Math.max(6, geo.s * 0.14));
+
+        // Los hijos concretos de esta traza, resaltados (rombo), en cuanto se conocen sus dos genes
+        const kids = [c1 ? { k: 'c1', v: c1 } : null, c2 ? { k: 'c2', v: c2 } : null].filter(Boolean);
+        g.selectAll('path.cloud-child').data(kids, (d) => d.k)
+          .join((enter) => enter.append('path').attr('class', (d) => `cloud-child cloud-${d.k}`))
+          .attr('d', (d) => {
+            const r = Math.max(7, geo.s * 0.16);
+            const cx = X(d.v[0]), cy = Y(d.v[1]);
+            return `M ${cx} ${cy - r} L ${cx + r} ${cy} L ${cx} ${cy + r} L ${cx - r} ${cy} Z`;
+          });
+      },
+    },
+
     // CX: ciclos encontrados hasta ahora, con el padre del que los toma el Hijo 1.
     cycles: {
       caption: 'cycleList',
@@ -308,7 +376,7 @@
       const yP2 = yP1 + s + (linkSpace ? Math.max(40, Math.round(s * 0.7)) : gap);
       const yAux = yP2 + s + 52;
       const auxSq = Math.round(Math.min(34, s * 0.62));
-      const auxH = hasAux && AUX[auxType].height ? AUX[auxType].height({ s }) : auxSq;
+      const auxH = hasAux && AUX[auxType].height ? AUX[auxType].height({ s, compact }) : auxSq;
       const yC1 = hasAux ? yAux + auxH + 36 : yP2 + s + 44;
       const yC2 = yC1 + s + gap;
       const H = yC2 + s + 18;
@@ -324,9 +392,11 @@
       g.selectAll('*').remove();
       const mapped = d.kind === 'mapped';
       const blend = d.kind === 'blend';   // gen combinado (cruce aritmético): w = parte del Padre 1
+      const wide = d.kind === 'wide';     // gen sorteado en un intervalo (BLX-α, SBX): puede salir del de los padres
       const fillOf = () => {
         if (mapped) return `url(#hatch-${d.origin})`;
         if (blend) return `color-mix(in srgb, var(--p1) ${Math.round(d.w * 100)}%, var(--p2))`;
+        if (wide) return 'var(--wide)';
         return `var(--${d.origin})`;
       };
       g.append('rect')
@@ -338,7 +408,7 @@
       // Los valores largos (reales con decimales) se escriben más pequeños para que quepan.
       const fs = Math.min(s * 0.44, (s * 0.9) / (txt.length * 0.58));
       g.append('text')
-        .attr('class', mapped || blend ? 'gene-num gene-num-halo' : `gene-num ink-${d.origin}`)
+        .attr('class', mapped || blend || wide ? 'gene-num gene-num-halo' : `gene-num ink-${d.origin}`)
         .attr('x', s / 2).attr('y', s / 2)
         .attr('dy', '0.36em')
         .style('font-size', `${Math.round(fs)}px`)

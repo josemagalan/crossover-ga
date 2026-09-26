@@ -90,11 +90,21 @@
         },
         {
           id: 'blx',
+          ready: true,
+          subtitle: {
+            es: 'Cruce BLX-α: cada gen se sortea en el intervalo de los padres ampliado en α',
+            en: 'BLX-α crossover: each gene is drawn from the parents’ interval widened by α',
+          },
           name: { es: 'Cruce BLX-α', en: 'BLX-α crossover' },
           summary: { es: 'Cada gen se elige al azar en el intervalo de los padres ampliado en α.', en: 'Each gene is drawn from the parents’ interval widened by α.' },
         },
         {
           id: 'sbx',
+          ready: true,
+          subtitle: {
+            es: 'Cruce SBX: imita con reales la dispersión del cruce binario de un punto; η la controla',
+            en: 'SBX crossover: mimics one-point binary crossover’s spread with reals; η controls it',
+          },
           name: { es: 'Cruce SBX', en: 'SBX crossover' },
           summary: { es: 'Imita con reales el efecto del cruce binario de un punto; η controla la dispersión.', en: 'Mimics one-point binary crossover with reals; η controls the spread.' },
         },
