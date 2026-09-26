@@ -25,6 +25,10 @@
     counter: $('stepCounter'), barFill: $('barFill'),
     speed: $('speed'), speedOut: $('speedOut'),
     narration: $('narration'), chain: $('chain'),
+    playerBox: $('playerBox'), narrationBox: $('narrationBox'),
+    btnPractice: $('btnPractice'), practiceCard: $('practiceCard'), practiceIntro: $('practiceIntro'),
+    practiceGivens: $('practiceGivens'), practiceForm: $('practiceForm'), prC1: $('prC1'), prC2: $('prC2'),
+    practiceErr: $('practiceErr'), practiceResult: $('practiceResult'), btnPracticeExit: $('btnPracticeExit'),
   };
 
   const state = {
@@ -37,6 +41,7 @@
     n: 8, seed: 0, p1: [], p2: [], cuts: [],
     result: null, step: 0,
     playing: false, speed: 1, errKey: null,
+    practice: false,     // modo «predice el hijo»: paso fijo en la intro, sin reproductor
   };
   let timer = null;
   let learn = null;
@@ -154,10 +159,12 @@
       bands: state.result.bands || null,
       aux: state.result.aux || null,
     });
-    goTo(step || 0, false);
+    goTo(state.practice ? 0 : (step || 0), false);
     syncControls();
     // Los enlaces a los otros operadores llevan los padres (y cortes) actuales
     el.opSwitch.querySelectorAll('a.op-chip[data-op]').forEach((a) => { a.href = sameProblemHref(a.dataset.op); });
+    // El problema ha podido cambiar (padres, cortes, parámetros): refrescar los datos ocultos y la predicción.
+    if (state.practice) { renderPracticeGivens(); resetPracticeForm(); }
   }
 
   // ---------- Reproductor ----------
@@ -233,6 +240,132 @@
     el.btnPlay.setAttribute('aria-label', t('play'));
   }
   function togglePlay() { if (state.playing) stop(); else play(); }
+
+  // ---------- Modo práctica («predice el hijo») ----------
+
+  // Operadores del cruce uniforme (binario y real): la máscara está calculada desde el principio,
+  // pero solo se revela progresivamente en la traza normal, así que aquí sí es un dato oculto.
+  const UNIFORM_OPS = ['uniform-binary', 'uniform-real'];
+
+  function setPracticeMode(on) {
+    state.practice = on;
+    el.btnPractice.textContent = t(on ? 'exitPractice' : 'practiceMode');
+    el.practiceCard.hidden = !on;
+    el.playerBox.hidden = on;
+    el.narrationBox.hidden = on;
+    if (on) {
+      el.practiceIntro.textContent = t('practiceIntro');
+      renderPracticeGivens();
+      resetPracticeForm();
+      goTo(0, false);
+    } else {
+      goTo(state.step, false);
+    }
+  }
+
+  // Información que el algoritmo ha sorteado y que la traza normal no muestra desde el principio
+  // (o no muestra nunca): sin ella la predicción del hijo exacto no tendría una única respuesta.
+  function renderPracticeGivens() {
+    const r = state.result;
+    const rows = [];
+    const fmtDraw = (v) => v.toLocaleString(locale(), { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+
+    if (UNIFORM_OPS.indexOf(state.opId) !== -1 && Array.isArray(r.mask)) {
+      rows.push({ label: t('practiceGivenMaskLabel'), value: r.mask.join(' '), hint: t('practiceGivenMaskHint') });
+    }
+    if (state.opId === 'cx' && state.variant === 'random' && Array.isArray(r.choices)) {
+      const value = r.choices.map((c, i) => `${t('practiceCycleN', { k: i + 1 })}: ${t(c === 'p1' ? 'parent1' : 'parent2')}`).join(' · ');
+      rows.push({ label: t('practiceGivenChoicesLabel'), value });
+    }
+    if ((state.opId === 'blx' || state.opId === 'sbx') && Array.isArray(r.draws)) {
+      const perGene = Array.from({ length: state.n }, (_, i) => (state.opId === 'blx'
+        ? `${t('practiceGeneN', { i: i + 1 })}: r₁=${fmtDraw(r.draws[2 * i])}, r₂=${fmtDraw(r.draws[2 * i + 1])}`
+        : `${t('practiceGeneN', { i: i + 1 })}: u=${fmtDraw(r.draws[i])}`));
+      rows.push({ label: t(state.opId === 'blx' ? 'practiceGivenBlxLabel' : 'practiceGivenSbxLabel'), value: perGene.join(' · ') });
+    }
+
+    el.practiceGivens.replaceChildren();
+    el.practiceGivens.hidden = !rows.length;
+    rows.forEach((row) => {
+      const p = document.createElement('p');
+      p.className = 'practice-given';
+      const strong = document.createElement('strong');
+      strong.textContent = `${row.label}: `;
+      p.append(strong, document.createTextNode(row.value));
+      if (row.hint) {
+        const hint = document.createElement('span');
+        hint.className = 'practice-given-hint';
+        hint.textContent = ` ${row.hint}`;
+        p.append(hint);
+      }
+      el.practiceGivens.append(p);
+    });
+  }
+
+  function resetPracticeForm() {
+    el.prC1.value = '';
+    el.prC2.value = '';
+    el.practiceErr.textContent = '';
+    [el.prC1, el.prC2].forEach((i) => i.removeAttribute('aria-invalid'));
+    el.practiceResult.replaceChildren();
+    el.btnPracticeExit.hidden = true;
+  }
+
+  // Validación ligera de la predicción: solo el formato numérico que exige la representación
+  // (longitud, bits, enteros en rango), SIN exigir que sea una permutación válida (en el
+  // uno-punto de permutación el hijo «correcto» puede tener genes repetidos o que falten:
+  // esa es justo la lección) ni el rango [0, 100] de la entrada manual de padres (en BLX-α
+  // y SBX el hijo puede caer legítimamente fuera de ese rango).
+  function validatePracticeGuess(guess) {
+    const n = state.n;
+    if (!Array.isArray(guess) || guess.length !== n) return 'errLength';
+    if (repId() === 'binary') return guess.every((v) => v === 0 || v === 1) ? null : 'errBits';
+    if (repId() === 'permutation') return guess.every((v) => Number.isInteger(v) && v >= 1 && v <= n) ? null : 'errFormat';
+    return guess.every((v) => typeof v === 'number' && Number.isFinite(v)) ? null : 'errFormat';
+  }
+
+  function renderPracticeResult(rows) {
+    el.practiceResult.replaceChildren();
+    let ok = 0;
+    let total = 0;
+    rows.forEach((cells, ci) => {
+      const line = document.createElement('div');
+      line.className = 'practice-result-row';
+      const label = document.createElement('span');
+      label.className = 'practice-result-label';
+      label.textContent = `${t(ci === 0 ? 'child1' : 'child2')}:`;
+      line.append(label);
+      cells.forEach((cell) => {
+        total++;
+        if (cell.ok) ok++;
+        const chip = document.createElement('span');
+        chip.className = `practice-gene ${cell.ok ? 'ok' : 'bad'}`;
+        chip.textContent = cell.ok ? fmtGene(cell.correct) : `${fmtGene(cell.guess)} → ${fmtGene(cell.correct)}`;
+        line.append(chip);
+      });
+      el.practiceResult.append(line);
+    });
+    const summary = document.createElement('p');
+    summary.className = `practice-score${ok === total ? ' all' : ''}`;
+    summary.textContent = ok === total ? t('practiceAllCorrect') : t('practiceResultScore', { ok, total });
+    el.practiceResult.append(summary);
+    el.btnPracticeExit.hidden = false;
+  }
+
+  function gradePractice() {
+    const g1 = parseList(el.prC1.value);
+    const g2 = parseList(el.prC2.value);
+    const err = validatePracticeGuess(g1) || validatePracticeGuess(g2);
+    el.practiceErr.textContent = err ? t(err) : '';
+    [el.prC1, el.prC2].forEach((i) => i.setAttribute('aria-invalid', String(!!err)));
+    if (err) { el.practiceResult.replaceChildren(); el.btnPracticeExit.hidden = true; return; }
+
+    const correct = state.result.children;
+    const isReal = repId() === 'real';
+    const closeEnough = (a, b) => (isReal ? Math.abs(a - b) < 0.1 : a === b);
+    const rows = [g1, g2].map((guess, ci) => guess.map((v, i) => ({ guess: v, correct: correct[ci][i], ok: closeEnough(v, correct[ci][i]) })));
+    renderPracticeResult(rows);
+  }
 
   // ---------- Cabecera, selector de operadores y leyenda ----------
 
@@ -311,6 +444,8 @@
     const ph = PH[repId()];
     el.inP1.placeholder = ph[0];
     el.inP2.placeholder = ph[1];
+    el.prC1.placeholder = ph[0];
+    el.prC2.placeholder = ph[1];
   }
 
   // Controles de los parámetros del operador (p. ej. número de cortes k, probabilidad p).
@@ -387,6 +522,12 @@
       learn.refresh();
       renderNarration();
       syncControls();
+      el.btnPractice.textContent = t(state.practice ? 'exitPractice' : 'practiceMode');
+      if (state.practice) {
+        el.practiceIntro.textContent = t('practiceIntro');
+        renderPracticeGivens();
+        resetPracticeForm();
+      }
     }
     writeHash();
   }
@@ -406,6 +547,11 @@
     state.view = 'op';
     state.opId = id;
     state.errKey = null;
+    state.practice = false;
+    el.practiceCard.hidden = true;
+    el.playerBox.hidden = false;
+    el.narrationBox.hidden = false;
+    el.btnPractice.textContent = t('practiceMode');
     el.homeView.hidden = true;
     el.opView.hidden = false;   // visible antes de dibujar, para medir el ancho disponible
 
@@ -537,6 +683,10 @@
     recompute(0);
   });
 
+  el.btnPractice.addEventListener('click', () => setPracticeMode(!state.practice));
+  el.btnPracticeExit.addEventListener('click', () => setPracticeMode(false));
+  el.practiceForm.addEventListener('submit', (e) => { e.preventDefault(); gradePractice(); });
+
   el.variant.addEventListener('change', () => {
     state.variant = el.variant.value;
     el.variantDesc.textContent = G.content[state.opId].variants[state.variant].desc[state.lang];
@@ -571,6 +721,7 @@
     const tag = (e.target.tagName || '').toLowerCase();
     if (tag === 'input' || tag === 'textarea' || tag === 'select' || e.target.isContentEditable) return;
     if (e.altKey || e.ctrlKey || e.metaKey) return;
+    if (state.practice) return;   // el paso queda fijo en la intro mientras se practica
     if (e.key === 'ArrowRight') { e.preventDefault(); stop(); next(); }
     else if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
     else if (e.key === ' ' && tag !== 'button' && tag !== 'summary' && tag !== 'a') { e.preventDefault(); togglePlay(); }

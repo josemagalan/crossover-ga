@@ -669,6 +669,30 @@ summary {
   color: var(--ink);
 }
 
+/* Modo práctica */
+.practice-givens { margin: 10px 0 4px; display: flex; flex-direction: column; gap: 6px; }
+.practice-given { margin: 0; font-size: 0.92rem; line-height: 1.5; }
+.practice-given-hint { color: var(--muted); }
+.practice-form { margin-top: 12px; }
+.practice-result { margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+.practice-result-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.practice-result-label { font-weight: 600; margin-right: 2px; }
+.practice-gene {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 9px;
+  border-radius: 8px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  font-size: 0.92rem;
+  border: 1.5px solid transparent;
+}
+.practice-gene.ok { background: color-mix(in srgb, var(--wide) 22%, transparent); border-color: var(--wide); color: var(--ink); }
+.practice-gene.bad { background: color-mix(in srgb, var(--conflict) 16%, transparent); border-color: var(--conflict); color: var(--ink); }
+.practice-score { margin: 4px 0 0; font-weight: 700; }
+.practice-score.all { color: var(--wide); }
+
 .foot { text-align: center; margin-top: 6px; }
 
 @media (max-width: 960px) {

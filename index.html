@@ -63,6 +63,7 @@
             <button type="button" id="btnRandom" class="btn primary" data-i18n="randomParents">Padres aleatorios</button>
             <button type="button" id="btnCuts" class="btn" data-i18n="randomCuts">Cortes aleatorios</button>
               <button type="button" id="btnDraw" class="btn" data-i18n="drawAgain" hidden>Sortear de nuevo</button>
+            <button type="button" id="btnPractice" class="btn" data-i18n="practiceMode">Practicar</button>
           </div>
         </div>
         <p id="variantDesc" class="hint variant-desc" hidden></p>
@@ -90,7 +91,7 @@
         </svg>
         <p class="hint drag-hint" id="dragHint" data-i18n="dragHint">Arrastra los marcadores ◆ para mover los cortes.</p>
 
-        <div class="player">
+        <div class="player" id="playerBox">
           <div class="player-buttons">
             <button type="button" class="icon-btn" id="btnReset" data-i18n-title="reset" title="Inicio">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg>
@@ -117,12 +118,32 @@
           </div>
         </div>
 
-        <div class="narration" aria-live="polite">
+        <div class="narration" id="narrationBox" aria-live="polite">
           <p id="narration"></p>
           <p id="chain" class="chain" hidden></p>
         </div>
 
         <ul class="legend" id="legend"></ul>
+      </section>
+
+      <section class="card practice" id="practiceCard" hidden aria-labelledby="practice-title">
+        <h2 id="practice-title" class="learn-title" data-i18n="practiceTitle">Practicar: predice el hijo</h2>
+        <p class="hint" id="practiceIntro"></p>
+        <div id="practiceGivens" class="practice-givens" hidden></div>
+        <form id="practiceForm" class="manual-form practice-form" novalidate>
+          <div class="manual-grid">
+            <label for="prC1" data-i18n="yourChild1">Tu hijo 1</label>
+            <input type="text" id="prC1" autocomplete="off" spellcheck="false">
+            <label for="prC2" data-i18n="yourChild2">Tu hijo 2</label>
+            <input type="text" id="prC2" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="manual-actions">
+            <button type="submit" class="btn primary" data-i18n="checkPrediction">Comprobar</button>
+            <button type="button" id="btnPracticeExit" class="btn" data-i18n="seeAnimation" hidden>Ver la animación</button>
+            <p id="practiceErr" class="error" role="alert"></p>
+          </div>
+        </form>
+        <div id="practiceResult" class="practice-result" aria-live="polite"></div>
       </section>
 
       <section class="card learn" aria-labelledby="learn-title">
