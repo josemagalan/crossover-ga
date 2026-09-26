@@ -34,11 +34,12 @@
     btnCompare: $('btnCompare'), btnRoutes: $('btnRoutes'), routeCard: $('routeCard'), routeLegend: $('routeLegend'),
     cmpView: $('cmpView'), cmpBack: $('cmpBack'), cmpBackText: $('cmpBackText'), cmpEyebrow: $('cmpEyebrow'),
     cmpRandom: $('cmpRandom'), cmpDraw: $('cmpDraw'),
+    aboutView: $('aboutView'), aboutBody: $('aboutBody'), siteFoot: $('siteFoot'),
   };
 
   const state = {
     lang: (navigator.language || '').toLowerCase().startsWith('en') ? 'en' : 'es',
-    view: null,          // 'home' | 'op' | 'cmp'
+    view: null,          // 'home' | 'op' | 'cmp' | 'about'
     opId: null,
     variant: null,       // variante del operador, si tiene varias
     draw: 1,             // semilla del sorteo de los operadores o variantes aleatorios (CX, uniforme)
@@ -556,6 +557,7 @@
 
     el.homeView.hidden = true;
     el.opView.hidden = true;
+    el.aboutView.hidden = true;
     el.cmpView.hidden = false;
     recomputeCompare();
     renderCompareHeader();
@@ -720,6 +722,11 @@
     document.querySelectorAll('.lang button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === state.lang)));
     el.err.textContent = state.errKey ? t(state.errKey) : '';
     if (state.playing) { el.btnPlay.title = t('pause'); el.btnPlay.setAttribute('aria-label', t('pause')); }
+    G.about.renderFooter(el.siteFoot, state.lang);
+    if (state.view === 'about') {
+      document.title = `${G.about.text[state.lang].title} · ${t('brand')}`;
+      G.about.renderAbout(el.aboutBody, state.lang);
+    }
     if (state.view === 'home') {
       document.title = t('homeTitleDoc');
       home.render();
@@ -752,7 +759,19 @@
     state.view = 'home';
     el.opView.hidden = true;
     el.cmpView.hidden = true;
+    el.aboutView.hidden = true;
     el.homeView.hidden = false;
+  }
+
+  function showAbout() {
+    stop();
+    const changed = state.view !== 'about';
+    state.view = 'about';
+    el.homeView.hidden = true;
+    el.opView.hidden = true;
+    el.cmpView.hidden = true;
+    el.aboutView.hidden = false;
+    if (changed) window.scrollTo(0, 0);
   }
 
   function showOp(id, q) {
@@ -769,6 +788,7 @@
     el.btnPractice.textContent = t('practiceMode');
     el.homeView.hidden = true;
     el.cmpView.hidden = true;
+    el.aboutView.hidden = true;
     el.opView.hidden = false;   // visible antes de dibujar, para medir el ancho disponible
 
     const vs = impl().spec.variants;
@@ -811,6 +831,7 @@
     const cmp = q.get('cmp');
     if (id && registry.isReady(id) && G.operators[id] && G.content[id]) showOp(id, q);
     else if (cmp && registry.getRepresentation(cmp) && cmpOps(cmp).length) showCompare(cmp, q);
+    else if (q.get('page') === 'about') showAbout();
     else showHome();
     applyLanguage();
   }
@@ -818,6 +839,7 @@
   // Guarda el estado en la URL sin crear entradas de historial (para proyectar o compartir).
   function writeHash() {
     const params = { lang: state.lang };
+    if (state.view === 'about') params.page = 'about';
     if (state.view === 'op') {
       Object.assign(params, {
         op: state.opId,
@@ -848,7 +870,7 @@
       paramIds = Object.keys(c.params);
       paramIds.forEach((k) => { params[k] = String(c.params[k]); });
     }
-    const order = ['op', 'cmp', 'lang', 'from', 'v', 'r'].concat(paramIds, ['p1', 'p2', 'c', 's', 'm', 'step']).filter((k) => params[k] != null && params[k] !== '');
+    const order = ['page', 'op', 'cmp', 'lang', 'from', 'v', 'r'].concat(paramIds, ['p1', 'p2', 'c', 's', 'm', 'step']).filter((k) => params[k] != null && params[k] !== '');
     const h = new URLSearchParams(order.map((k) => [k, params[k]])).toString();
     if (location.hash.replace(/^#/, '') === h) return;
     try { history.replaceState(null, '', `#${h}`); } catch (err) { /* file:// en algunos navegadores */ }
@@ -962,7 +984,7 @@
   }));
 
   // Enlaces a la pantalla inicial conservando el idioma
-  [$('brandLink'), $('backLink')].forEach((a) => a.addEventListener('click', (e) => {
+  [$('brandLink'), $('backLink'), $('aboutBack')].forEach((a) => a.addEventListener('click', (e) => {
     e.preventDefault();
     location.hash = `lang=${state.lang}`;
   }));

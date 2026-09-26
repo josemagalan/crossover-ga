@@ -1,71 +1,95 @@
-# Cruces en algoritmos genéticos · Crossover in genetic algorithms
+# Crossover in genetic algorithms
 
-Herramienta docente interactiva (D3.js) que ilustra paso a paso los operadores de cruce de los algoritmos genéticos, clasificados por tipo de representación. Está pensada para alumnos de grado en Informática.
+[![Live demo](https://img.shields.io/badge/Live_demo-GitHub_Pages-2ea44f?logo=github)](https://josemagalan.github.io/crossover-ga/)
+[![Tests](https://github.com/josemagalan/crossover-ga/actions/workflows/tests.yml/badge.svg)](https://github.com/josemagalan/crossover-ga/actions/workflows/tests.yml)
+[![Code: MIT](https://img.shields.io/badge/Code-MIT-yellow.svg)](LICENSE)
+[![Content: CC BY 4.0](https://img.shields.io/badge/Content-CC_BY_4.0-lightgrey.svg)](LICENSE-CONTENT.md)
+[![D3.js v7 · no build](https://img.shields.io/badge/D3.js_v7-no_build-f9a03c?logo=d3dotjs&logoColor=white)](https://d3js.org/)
+[![Languages: ES | EN](https://img.shields.io/badge/Languages-ES_%7C_EN-blue.svg)](#features)
+[![Purpose: Teaching tool](https://img.shields.io/badge/Purpose-Teaching_tool-informational.svg)](#pedagogical-purpose)
 
-**Estado:** disponibles los cruces binarios en un punto, en dos puntos, en n puntos y uniforme (todos explicados con la máscara de cruce de Syswerda), los cruces reales uniforme, aritmético (con el peso λ ajustable), BLX-α (con el parámetro α) y SBX (con el parámetro η) —estos dos últimos con una vista 2D adicional que muestra los padres, una nube de otros hijos posibles y los hijos de la traza—, los cruces permutacionales PMX, OX, CX (OX y CX con tres variantes cada uno) y ERX (con su tabla de adyacencias y dos variantes) y un contraejemplo que muestra por qué el cruce en un punto no sirve para permutaciones.
+**José Manuel Galán**¹ · **Silvia Díaz-de la Fuente**² · **Virginia Ahedo**¹ · **María Pereda**³ · **José Ignacio Santos**¹
 
-## Qué incluye
+¹ Universidad de Burgos · ² Universidad de Salamanca · ³ Universidad Politécnica de Madrid
+All authors are members of the Los Goonies research group (Group of Organization and Industrial Engineering and Simulation).
 
-- Pantalla inicial con los operadores clasificados por representación (binaria, real y permutacional).
-- Animación paso a paso del cruce, en español e inglés, con una explicación de cada paso.
-- Padres aleatorios (con semilla reproducible) o introducidos a mano, y puntos de corte que se arrastran con el ratón.
-- El ejemplo actual queda guardado en la URL, para proyectarlo en clase o compartirlo.
-- Panel «Para saber más»: explicación del método, pseudocódigo que resalta la línea del paso actual, implementación en Python y JavaScript para copiar o descargar, y referencias.
-- Modo práctica «predice el hijo»: con el botón «Practicar», antes de ver la animación se puede escribir la predicción de los dos hijos y comprobarla gen a gen (verde/rojo), con los datos que el algoritmo sortea por dentro (máscara, sorteos u orden de los ciclos) a la vista cuando hace falta para que la predicción tenga una única respuesta correcta.
-- En los cruces de permutación, «Ver como rutas» muestra cada cromosoma como una ruta del viajante sobre ciudades colocadas al azar: las de los padres y la de cada hijo formándose con la animación, con sus longitudes y los tramos nuevos marcados.
-- Comparar operadores: una pantalla por representación que aplica todos sus cruces a los mismos padres (y, cuando se puede, los mismos cortes), colorea cada gen de los hijos según lo que conserva de los padres y resume en una tabla, con la media de 1000 repeticiones, cuánto conserva cada uno: posición, orden relativo circular, adyacencias, copias de un padre y validez en permutación; genes del padre propio y tramos en binaria; copias, valores dentro del intervalo y distancia a los padres en real.
+---
 
-## Uso
+## Overview
 
-Abre `index.html` en el navegador. No necesita servidor ni conexión a internet: D3 v7 va incluido en `vendor/`.
+Crossover is how a genetic algorithm combines the information of two parents to create children, and how it has to be done depends on how each solution is represented: an operator designed for bit strings can produce invalid solutions when the chromosome is a permutation. This interactive tool shows, step by step and in Spanish or English, how the classic crossover operators work for binary, real-valued and permutation representations, and lets students practise predicting the children and compare what each operator preserves from the parents.
 
-Teclado: ← → avanzar o retroceder, espacio reproducir o pausar, Inicio volver al principio.
+It runs entirely in the browser, with no build step and no server: open `index.html` or use the [live demo](https://josemagalan.github.io/crossover-ga/).
+
+## Implemented operators
+
+| Representation | Operators |
+| --- | --- |
+| Binary | One-point, two-point, n-point (k cuts) and uniform (probability p), all explained through Syswerda’s crossover mask |
+| Real-valued | Uniform, arithmetic (weight λ), BLX-α (α) and SBX (η); BLX-α and SBX with an extra 2D view of the parents, a cloud of other possible children and the children of the trace |
+| Permutation | PMX, OX (three variants), CX (three variants) and ERX (two variants, with its adjacency table), plus a counterexample showing why one-point crossover fails on permutations |
+
+## Features
+
+- **Step-by-step animation** of every operator with a narration of each step, in Spanish and English.
+- **Your own examples:** random parents with a reproducible seed or parents entered by hand, draggable cut points, operator parameters as sliders; the current example is saved in the URL, ready to project in class or share.
+- **Learn more panel:** explanation of the method, pseudocode that highlights the line of the current step, Python and JavaScript implementations to copy or download (tested to give exactly the same children as the tool), and references with the original source of each operator.
+- **Practice mode (“predict the child”):** write your prediction of both children before watching the animation and check it gene by gene; whatever the algorithm draws internally (mask, draws, cycle order, ties) is revealed only when needed for the answer to be unique.
+- **Compare operators:** one screen per representation applies every crossover to the same parents (and, where possible, the same cuts), colours each child gene by what it keeps from the parents, and sums up over 1000 runs how much each operator preserves: position, circular relative order, adjacencies, copies of a parent and validity for permutations; genes from the own parent and stretches for binary; copies, values inside the parents’ interval and distance to the parents for real-valued.
+- **Chromosomes as routes:** for permutation crossovers, each gene becomes a city and each chromosome a travelling-salesman route; the parents’ routes and each child’s route build up with the animation, with their lengths and the new stretches marked.
+
+## Pedagogical purpose
+
+The tool is designed for undergraduate courses on metaheuristics, evolutionary computation and industrial engineering (production scheduling, sequencing, routing). It can be projected in lectures to walk through each operator, used by students on their own to check hand-worked exercises in practice mode, or used in seminars to discuss why different representations need different operators and what each operator preserves.
+
+## Running locally
+
+Open `index.html` in any modern browser. No server or internet connection is needed: D3 v7 is bundled in `vendor/`.
+
+Keyboard: ← → step back/forward, Space play/pause, Home back to the start.
 
 ## Tests
 
-Requieren Node.js 22 o superior; Python 3 es opcional (sirve para probar también la versión en Python del código descargable).
+Requires Node.js 22 or later; Python 3 is optional (it is used to test the downloadable Python code as well).
 
 ```
 npm test
 ```
 
-Comprueban el operador (el ejemplo de las transparencias y miles de casos aleatorios contrastados con una implementación independiente), que el código descargable da los mismos hijos que la herramienta y que el pseudocódigo está enlazado con los pasos de la animación.
+The tests check every operator (worked examples, thousands of random cases contrasted with an independent implementation), that the downloadable code gives the same children as the tool with the same random draws, that the pseudocode is linked to the animation steps, the comparison metrics and the city maps. They run on every push with GitHub Actions.
 
-## Estructura
+## Project structure
 
-| Ruta | Contenido |
+| Path | Contents |
 | --- | --- |
-| `index.html`, `css/` | Página y estilos |
-| `js/registry.js`, `js/home.js` | Catálogo de representaciones y operadores; pantalla inicial |
-| `js/operators/` | Lógica de cada operador: función pura que devuelve los hijos y la traza de pasos |
-| `js/viz/` | Vistas D3 que dibujan esa traza |
-| `js/content/` | Contenido docente de cada operador: explicación, pseudocódigo, código descargable y referencias |
-| `js/learn.js`, `js/app.js` | Panel «Para saber más» y controlador de la página |
-| `js/compare.js`, `js/compare-view.js` | Métricas de «Comparar operadores» (qué conserva cada cruce) y su pantalla |
-| `js/i18n.js`, `js/rng.js` | Textos en español e inglés; generador aleatorio con semilla |
-| `vendor/` | D3.js v7 |
-| `tests/` | Tests con `node:test` |
+| `index.html`, `css/` | Page and styles |
+| `js/registry.js`, `js/home.js` | Catalogue of representations and operators; home screen |
+| `js/operators/` | Logic of each operator: a pure function returning the children and the trace of steps |
+| `js/viz/` | D3 views that draw the trace, and the route maps |
+| `js/content/` | Teaching content of each operator: explanation, pseudocode, downloadable code and references |
+| `js/compare.js`, `js/compare-view.js` | “Compare operators”: metrics and screen |
+| `js/learn.js`, `js/about.js`, `js/app.js` | “Learn more” panel, about page and footer, page controller |
+| `js/i18n.js`, `js/rng.js`, `js/cities.js` | Spanish and English texts; seeded random generator; random cities |
+| `img/logos/`, `vendor/` | Institution logos; D3.js v7 |
+| `tests/` | Tests with `node:test` |
 
-## Licencia
+## How to cite
 
-- Código, incluidas las implementaciones descargables en Python y JavaScript: MIT (ver [LICENSE](LICENSE)).
-- Textos docentes (explicaciones, narración de los pasos y pseudocódigo): CC BY 4.0 (ver [LICENSE-CONTENT.md](LICENSE-CONTENT.md)).
-- D3.js: licencia ISC (ver [vendor/d3-LICENSE](vendor/d3-LICENSE)).
+A paper describing this tool is in preparation for the Congreso de Ingeniería de Organización (CIO). In the meantime, if you would like to cite it, please contact the authors.
 
-## Autor
+## License
 
-José Manuel Galán, Universidad de Burgos.
+- Code, including the downloadable Python and JavaScript implementations: MIT (see [LICENSE](LICENSE)).
+- Teaching texts (explanations, step narration and pseudocode): CC BY 4.0 (see [LICENSE-CONTENT.md](LICENSE-CONTENT.md)).
+- D3.js: ISC licence (see [vendor/d3-LICENSE](vendor/d3-LICENSE)).
 
----
+## Acknowledgements
 
-## English
+We thank Anthropic’s Claude for Science programme for supporting the development of this tool, which was built with the help of Claude.
 
-Interactive teaching tool (D3.js) that illustrates genetic algorithm crossover operators step by step, grouped by representation type. It currently includes the binary one-point, two-point, n-point and uniform crossovers (all explained through Syswerda's crossover mask), the real-valued uniform, arithmetic (with adjustable weight λ), BLX-α (with parameter α) and SBX (with parameter η) crossovers —the latter two with an additional 2D view showing the parents, a cloud of other possible children and the children of the current trace—, the permutation operators PMX, OX, CX (OX and CX with three variants each) and ERX (with its adjacency table and two variants) and a counterexample showing why one-point crossover fails on permutations.
-
-It also has a "predict the child" practice mode: before watching the animation, write your prediction for both children and check it gene by gene (green/red), with whatever the algorithm draws internally (mask, draws or cycle order) revealed only when it's needed for the prediction to have a single correct answer.
-
-For permutation crossovers, "Show as routes" draws each chromosome as a travelling-salesman route over randomly placed cities: the parents' routes and each child's route building up with the animation, with their lengths and new stretches marked.
-
-A "compare operators" screen for each representation applies all its crossovers to the same parents (and, where possible, the same cuts), colours each child gene by what it keeps from the parents and sums up, averaged over 1000 runs, how much each operator keeps: position, circular relative order, adjacencies, copies of a parent and validity for permutations; genes from the own parent and stretches for binary; copies, values inside the interval and distance to the parents for real-valued.
-
-Open `index.html` in a browser; no server or internet connection is needed. Run the tests with `npm test` (Node.js 22 or later). Code is released under the MIT licence and the teaching texts under CC BY 4.0.
+<p>
+  <img src="img/logos/ubu.png" alt="Universidad de Burgos" height="56">&nbsp;&nbsp;
+  <img src="img/logos/usal.png" alt="Universidad de Salamanca" height="44">&nbsp;&nbsp;
+  <img src="img/logos/upm.png" alt="Universidad Politécnica de Madrid" height="44">&nbsp;&nbsp;
+  <img src="img/logos/goonies.png" alt="Los Goonies research group" height="44">
+</p>

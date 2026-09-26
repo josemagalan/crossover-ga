@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Operadores de cruce · Algoritmos genéticos</title>
+  <meta name="description" content="Herramienta docente interactiva: operadores de cruce de los algoritmos genéticos paso a paso (binarios, reales y de permutación). Interactive teaching tool: genetic algorithm crossover operators step by step.">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -236,6 +237,13 @@
         <p class="hint cmp-refs" id="cmpRefs"></p>
       </section>
     </main>
+
+    <main id="aboutView" hidden>
+      <a class="back" href="#" id="aboutBack"><span aria-hidden="true">←</span> <span data-i18n="allOperators">Todos los operadores</span></a>
+      <article class="card about" id="aboutBody"></article>
+    </main>
+
+    <footer class="site-foot" id="siteFoot"></footer>
   </div>
 
   <script src="vendor/d3.min.js"></script>
@@ -278,6 +286,7 @@
   <script src="js/content/sbx.js"></script>
   <script src="js/compare.js"></script>
   <script src="js/compare-view.js"></script>
+  <script src="js/about.js"></script>
   <script src="js/learn.js"></script>
   <script src="js/home.js"></script>
   <script src="js/app.js"></script>

@@ -2,10 +2,15 @@
   "name": "crossover-ga",
   "version": "0.1.0",
   "private": true,
-  "description": "Herramienta docente interactiva (D3.js) para ilustrar operadores de cruce en algoritmos genéticos",
+  "description": "Interactive teaching tool (D3.js) that shows genetic algorithm crossover operators step by step",
   "scripts": {
     "test": "node --test tests/*.test.js"
   },
   "license": "(MIT AND CC-BY-4.0)",
-  "author": "José Manuel Galán"
+  "author": "José Manuel Galán, Silvia Díaz-de la Fuente, Virginia Ahedo, María Pereda, José Ignacio Santos",
+  "homepage": "https://josemagalan.github.io/crossover-ga/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/josemagalan/crossover-ga.git"
+  }
 }

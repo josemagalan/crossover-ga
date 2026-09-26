@@ -818,6 +818,38 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; text
 
 .foot { text-align: center; margin-top: 6px; }
 
+/* Pie común y «Acerca de» */
+.site-foot {
+  margin-top: 28px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px 24px;
+}
+.site-foot-logos, .about-logos { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.site-foot-logos img { display: block; height: 30px; width: auto; border-radius: 4px; filter: grayscale(1); opacity: 0.7; transition: filter 0.2s, opacity 0.2s; }
+.site-foot-logos img.main { height: 38px; }
+.site-foot-logos a:hover img, .site-foot-logos img:hover { filter: none; opacity: 1; }
+.site-foot-info { font-size: 0.85rem; color: var(--muted); text-align: right; }
+.site-foot-info p { margin: 0; }
+.site-foot-links { margin-top: 2px !important; }
+.site-foot a, .about a { color: var(--p1-text); }
+.about { max-width: 820px; padding: 26px 28px; }
+.about h1 { margin-bottom: 10px; }
+.about .lead { margin-top: 0; }
+.about-section { margin-top: 22px; }
+.about-section h2 { margin: 0 0 8px; font-size: 1.1rem; }
+.about-section p { margin: 0 0 8px; line-height: 1.6; max-width: 75ch; }
+.about-authors { font-weight: 600; }
+.about-authors sup { font-weight: 600; margin-left: 1px; }
+.about-affs { margin: 4px 0 10px !important; color: var(--muted); }
+.about-logos { margin-top: 20px; }
+.about-logos img { display: block; height: 48px; width: auto; border-radius: 6px; }
+.about-logos img.main { height: 60px; }
+
 @media (max-width: 960px) {
   .rep-grid { grid-template-columns: 1fr; }
 }
@@ -844,6 +876,11 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; text
   .cmp-op { padding-left: 8px; }
   .cmp-defs { grid-template-columns: 1fr; gap: 2px; }
   .route-maps { grid-template-columns: 1fr; }
+  .site-foot { justify-content: flex-start; }
+  .site-foot-info { text-align: left; }
+  .about { padding: 18px 16px; }
+  .about-logos img { height: 38px; }
+  .about-logos img.main { height: 46px; }
   .cmp-defs dd { margin-bottom: 8px; }
 }
 
