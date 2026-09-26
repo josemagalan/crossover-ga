@@ -61,20 +61,20 @@
 
   const narration = {
     es: {
-      cloudCaption: 'Genes 1 y 2 de muchos hijos posibles con estos mismos padres y este mismo parámetro',
-      cloudCaptionShort: 'Genes 1 y 2 de muchos hijos posibles',
+      cloudCaption: 'Genes 1 y 2, como ejemplo fijo: otros hijos posibles con estos padres y este parámetro',
+      cloudCaptionShort: 'Genes 1 y 2 (ejemplo fijo)',
       cloudAxisX: 'Gen 1',
       cloudAxisY: 'Gen 2',
-      legendCloud: 'Otro hijo posible con los mismos padres y parámetro',
+      legendCloud: 'Otro hijo posible con los mismos padres y parámetro, para los genes 1 y 2. El resto de genes se sortea igual, cada uno por separado, aunque este panel no los dibuje.',
       legendCloudChild1: 'Hijo 1 de esta traza (rombo relleno)',
       legendCloudChild2: 'Hijo 2 de esta traza (rombo hueco)',
     },
     en: {
-      cloudCaption: 'Genes 1 and 2 of many possible children with these same parents and this same parameter',
-      cloudCaptionShort: 'Genes 1 and 2 of many possible children',
+      cloudCaption: 'Genes 1 and 2, as a fixed example: other possible children with these parents and parameter',
+      cloudCaptionShort: 'Genes 1 and 2 (fixed example)',
       cloudAxisX: 'Gene 1',
       cloudAxisY: 'Gene 2',
-      legendCloud: 'Another possible child with the same parents and parameter',
+      legendCloud: 'Another possible child with the same parents and parameter, for genes 1 and 2. The rest of the genes are drawn the same way, independently, even though this panel doesn’t plot them.',
       legendCloudChild1: 'This trace’s child 1 (filled diamond)',
       legendCloudChild2: 'This trace’s child 2 (hollow diamond)',
     },
