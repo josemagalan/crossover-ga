@@ -792,6 +792,30 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; text
 .cmp-defs dd { margin: 0; color: var(--muted); max-width: 80ch; }
 .cmp-refs { margin-top: 16px; max-width: 90ch; line-height: 1.5; }
 
+/* Rutas (permutaciones como circuitos del viajante) */
+.route-maps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 12px; }
+.route-map { margin: 0; min-width: 0; }
+.route-map svg { display: block; width: 100%; height: auto; background: var(--bg); border-radius: 10px; }
+.route-map figcaption { margin-top: 6px; font-size: 0.9rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.route-parent { fill: none; stroke-width: 2; stroke-linejoin: round; }
+.route-p1 { stroke: var(--p1); opacity: 0.45; }
+.route-p2 { stroke: var(--p2); opacity: 0.7; stroke-dasharray: 6 4; }
+.route-edge { stroke-width: 4; stroke-linecap: round; }
+.route-edge.kept { stroke: var(--ink); }
+.route-edge.new { stroke: var(--conflict); stroke-dasharray: 7 5; }
+.city circle { fill: var(--card); stroke: var(--ink); stroke-width: 1.5; }
+.city text { text-anchor: middle; font-size: 10px; font-weight: 700; fill: var(--ink); font-variant-numeric: tabular-nums; }
+.city.visited circle { fill: var(--ink); }
+.city.visited text { fill: var(--card); }
+.city.missing circle { stroke: var(--conflict); stroke-width: 3; stroke-dasharray: 3 2; }
+.sw-line { width: 26px; height: 5px; border-radius: 3px; }
+.sw-route-p1 { background: var(--p1); opacity: 0.6; }
+.sw-route-p2 { background: repeating-linear-gradient(90deg, var(--p2) 0 6px, transparent 6px 10px); }
+.sw-route-kept { background: var(--ink); }
+.sw-route-new { background: repeating-linear-gradient(90deg, var(--conflict) 0 7px, transparent 7px 11px); }
+.sw-city { width: 16px; height: 16px; border-radius: 50%; background: var(--ink); }
+.sw-city-missing { width: 16px; height: 16px; border-radius: 50%; border: 3px dashed var(--conflict); }
+
 .foot { text-align: center; margin-top: 6px; }
 
 @media (max-width: 960px) {
@@ -819,6 +843,7 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; text
   .cmp-gene { height: 30px; font-size: 0.8rem; border-radius: 5px; }
   .cmp-op { padding-left: 8px; }
   .cmp-defs { grid-template-columns: 1fr; gap: 2px; }
+  .route-maps { grid-template-columns: 1fr; }
   .cmp-defs dd { margin-bottom: 8px; }
 }
 

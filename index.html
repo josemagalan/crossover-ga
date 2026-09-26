@@ -64,6 +64,7 @@
             <button type="button" id="btnCuts" class="btn" data-i18n="randomCuts">Cortes aleatorios</button>
               <button type="button" id="btnDraw" class="btn" data-i18n="drawAgain" hidden>Sortear de nuevo</button>
             <button type="button" id="btnPractice" class="btn" data-i18n="practiceMode">Practicar</button>
+            <button type="button" id="btnRoutes" class="btn" data-i18n="showRoutes" hidden>Ver como rutas</button>
             <a id="btnCompare" class="btn" href="#" data-i18n="compareOperators">Comparar operadores</a>
           </div>
         </div>
@@ -125,6 +126,16 @@
         </div>
 
         <ul class="legend" id="legend"></ul>
+      </section>
+
+      <section class="card routes" id="routeCard" hidden aria-labelledby="routes-title">
+        <h2 id="routes-title" class="learn-title" data-i18n="routesTitle">Los cromosomas como rutas</h2>
+        <p class="hint" data-i18n="routesIntro"></p>
+        <div class="route-maps">
+          <figure class="route-map"><svg id="routeMap1" role="img"></svg><figcaption id="routeCap1"></figcaption></figure>
+          <figure class="route-map"><svg id="routeMap2" role="img"></svg><figcaption id="routeCap2"></figcaption></figure>
+        </div>
+        <ul class="legend" id="routeLegend"></ul>
       </section>
 
       <section class="card practice" id="practiceCard" hidden aria-labelledby="practice-title">
@@ -248,6 +259,8 @@
   <script src="js/operators/blx.js"></script>
   <script src="js/operators/sbx.js"></script>
   <script src="js/viz/permutation-view.js"></script>
+  <script src="js/cities.js"></script>
+  <script src="js/viz/route-map.js"></script>
   <script src="js/content/pmx.js"></script>
   <script src="js/content/ox.js"></script>
   <script src="js/content/cx.js"></script>

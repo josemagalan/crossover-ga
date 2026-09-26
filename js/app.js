@@ -11,7 +11,7 @@
 (function () {
   'use strict';
   const G = window.GAX;
-  const { rng: R, i18n, registry, createPermutationView, createLearnPanel, createHome, createCompareView } = G;
+  const { rng: R, i18n, registry, createPermutationView, createLearnPanel, createHome, createCompareView, createRouteMaps } = G;
 
   const $ = (id) => document.getElementById(id);
   const el = {
@@ -31,7 +31,7 @@
     btnPractice: $('btnPractice'), practiceCard: $('practiceCard'), practiceIntro: $('practiceIntro'),
     practiceGivens: $('practiceGivens'), practiceForm: $('practiceForm'), prC1: $('prC1'), prC2: $('prC2'),
     practiceErr: $('practiceErr'), practiceResult: $('practiceResult'), btnPracticeExit: $('btnPracticeExit'),
-    btnCompare: $('btnCompare'),
+    btnCompare: $('btnCompare'), btnRoutes: $('btnRoutes'), routeCard: $('routeCard'), routeLegend: $('routeLegend'),
     cmpView: $('cmpView'), cmpBack: $('cmpBack'), cmpBackText: $('cmpBackText'), cmpEyebrow: $('cmpEyebrow'),
     cmpRandom: $('cmpRandom'), cmpDraw: $('cmpDraw'),
   };
@@ -48,6 +48,7 @@
     playing: false, speed: 1, errKey: null,
     practice: false,     // modo «predice el hijo»: paso fijo en la intro, sin reproductor
     cmp: null,           // pantalla de comparar: { rep, from, variant, params, cuts, rows }
+    routes: false,       // permutaciones: ver los cromosomas como rutas sobre un mapa de ciudades
   };
   const CMP_REPS = 1000;   // repeticiones para las medias de la comparación
   let cmpToken = 0;
@@ -138,6 +139,39 @@
     },
   });
 
+  const routeMaps = createRouteMaps({
+    svgs: [$('routeMap1'), $('routeMap2')], caps: [$('routeCap1'), $('routeCap2')],
+  }, {
+    t: (k, p) => t(k, p),
+    tourLength: G.cities.tourLength,
+    formatLength: (v) => Math.round(v).toLocaleString(locale()),
+  });
+  const routesOn = () => state.routes && state.view === 'op' && repId() === 'permutation';
+
+  function renderRoutes() {
+    const perm = state.view === 'op' && repId() === 'permutation';
+    el.btnRoutes.hidden = !perm;
+    el.btnRoutes.textContent = t(state.routes ? 'hideRoutes' : 'showRoutes');
+    el.btnRoutes.setAttribute('aria-pressed', String(!!state.routes));
+    el.routeCard.hidden = !routesOn();
+    const items = [['sw-line sw-route-p1', 'routeLegendP1'], ['sw-line sw-route-p2', 'routeLegendP2'],
+      ['sw-line sw-route-kept', 'routeLegendKept'], ['sw-line sw-route-new', 'routeLegendNew'], ['sw-city', 'routeLegendCity']];
+    if (perm && spec().invalidChildren) items.push(['sw-city-missing', 'routeLegendMissing']);
+    el.routeLegend.replaceChildren(...items.map(([cls, k]) => {
+      const li = document.createElement('li');
+      const sw = document.createElement('span');
+      sw.className = `sw ${cls}`;
+      const lab = document.createElement('span');
+      lab.textContent = t(k);
+      li.append(sw, lab);
+      return li;
+    }));
+    if (routesOn() && state.result) {
+      routeMaps.setProblem({ p1: state.p1, p2: state.p2, cities: G.cities.randomCities(state.seed, state.n) });
+      routeMaps.show(state.result.steps[state.step]);
+    }
+  }
+
   const home = createHome(el.repGrid, { registry, t: (k, p) => t(k, p), lang: () => state.lang });
 
   // ---------- Problema ----------
@@ -168,6 +202,7 @@
       bands: state.result.bands || null,
       aux: state.result.aux || null,
     });
+    if (routesOn()) routeMaps.setProblem({ p1: state.p1, p2: state.p2, cities: G.cities.randomCities(state.seed, state.n) });
     goTo(state.practice ? 0 : (step || 0), false);
     syncControls();
     // Los enlaces a los otros operadores llevan los padres (y cortes) actuales
@@ -184,6 +219,7 @@
     state.step = Math.max(0, Math.min(steps.length - 1, i));
     const step = steps[state.step];
     view.show(step, { animate });
+    if (routesOn()) routeMaps.show(step);
     learn.setStep(step);
     renderNarration();
     el.btnPrev.disabled = el.btnReset.disabled = state.step === 0;
@@ -561,6 +597,7 @@
     const q = new URLSearchParams([['op', id], ['lang', state.lang], ['p1', state.p1.join('-')], ['p2', state.p2.join('-')]]);
     if (target && target.cuts === spec().cuts && target.cuts !== 'k') q.set('c', state.cuts.join('-'));
     q.set('s', String(state.seed));
+    if (state.routes && repId() === 'permutation') q.set('m', '1');
     return `#${q.toString()}`;
   }
 
@@ -700,6 +737,7 @@
         resetPracticeForm();
       }
       el.btnCompare.href = compareHref();
+      renderRoutes();
     } else if (state.view === 'cmp') {
       renderCompareHeader();
       cmpView.render({ rep: state.cmp.rep, n: state.n, p1: state.p1, p2: state.p2, rows: state.cmp.rows, reps: CMP_REPS, from: state.cmp.from });
@@ -724,6 +762,7 @@
     state.opId = id;
     state.errKey = null;
     state.practice = false;
+    state.routes = q.get('m') === '1';
     el.practiceCard.hidden = true;
     el.playerBox.hidden = false;
     el.narrationBox.hidden = false;
@@ -761,6 +800,7 @@
     }
     renderOpHeader();
     recompute(parseInt(q.get('step'), 10) || 0);
+    renderRoutes();
     if (changed) window.scrollTo(0, 0);
   }
 
@@ -788,6 +828,7 @@
         c: state.cuts.join('-'),
         s: String(state.seed),
         step: String(state.step),
+        m: routesOn() ? '1' : undefined,
       });
     }
     if (state.view === 'op') (spec().params || []).forEach((pr) => { params[pr.id] = String(state.params[pr.id]); });
@@ -807,7 +848,7 @@
       paramIds = Object.keys(c.params);
       paramIds.forEach((k) => { params[k] = String(c.params[k]); });
     }
-    const order = ['op', 'cmp', 'lang', 'from', 'v', 'r'].concat(paramIds, ['p1', 'p2', 'c', 's', 'step']).filter((k) => params[k] != null && params[k] !== '');
+    const order = ['op', 'cmp', 'lang', 'from', 'v', 'r'].concat(paramIds, ['p1', 'p2', 'c', 's', 'm', 'step']).filter((k) => params[k] != null && params[k] !== '');
     const h = new URLSearchParams(order.map((k) => [k, params[k]])).toString();
     if (location.hash.replace(/^#/, '') === h) return;
     try { history.replaceState(null, '', `#${h}`); } catch (err) { /* file:// en algunos navegadores */ }
@@ -878,6 +919,12 @@
   });
 
   el.btnPractice.addEventListener('click', () => setPracticeMode(!state.practice));
+  el.btnRoutes.addEventListener('click', () => {
+    state.routes = !state.routes;
+    renderRoutes();
+    el.opSwitch.querySelectorAll('a.op-chip[data-op]').forEach((a) => { a.href = sameProblemHref(a.dataset.op); });
+    writeHash();
+  });
   el.cmpRandom.addEventListener('click', () => {
     cmpParents(R.newSeed(), state.n);
     recomputeCompare();
