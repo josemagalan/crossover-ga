@@ -5,11 +5,13 @@
  * URL: #lang=es                          → pantalla inicial
  *      #op=pmx&lang=es&v=…&r=…&k=…&p=…&p1=…&p2=…&c=…&s=…&step=…  → página de un operador
  *      (v: variante; r: semilla del sorteo; k, p: parámetros del operador, si los tiene)
+ *      #cmp=permutation&lang=es&from=pmx&v=…&r=…&<parámetros de from>&p1=…&p2=…&c=…&s=…
+ *                                          → comparar los operadores de una representación
  */
 (function () {
   'use strict';
   const G = window.GAX;
-  const { rng: R, i18n, registry, createPermutationView, createLearnPanel, createHome } = G;
+  const { rng: R, i18n, registry, createPermutationView, createLearnPanel, createHome, createCompareView } = G;
 
   const $ = (id) => document.getElementById(id);
   const el = {
@@ -29,11 +31,14 @@
     btnPractice: $('btnPractice'), practiceCard: $('practiceCard'), practiceIntro: $('practiceIntro'),
     practiceGivens: $('practiceGivens'), practiceForm: $('practiceForm'), prC1: $('prC1'), prC2: $('prC2'),
     practiceErr: $('practiceErr'), practiceResult: $('practiceResult'), btnPracticeExit: $('btnPracticeExit'),
+    btnCompare: $('btnCompare'),
+    cmpView: $('cmpView'), cmpBack: $('cmpBack'), cmpBackText: $('cmpBackText'), cmpEyebrow: $('cmpEyebrow'),
+    cmpRandom: $('cmpRandom'), cmpDraw: $('cmpDraw'),
   };
 
   const state = {
     lang: (navigator.language || '').toLowerCase().startsWith('en') ? 'en' : 'es',
-    view: null,          // 'home' | 'op'
+    view: null,          // 'home' | 'op' | 'cmp'
     opId: null,
     variant: null,       // variante del operador, si tiene varias
     draw: 1,             // semilla del sorteo de los operadores o variantes aleatorios (CX, uniforme)
@@ -42,7 +47,10 @@
     result: null, step: 0,
     playing: false, speed: 1, errKey: null,
     practice: false,     // modo «predice el hijo»: paso fijo en la intro, sin reproductor
+    cmp: null,           // pantalla de comparar: { rep, from, variant, params, cuts, rows }
   };
+  const CMP_REPS = 1000;   // repeticiones para las medias de la comparación
+  let cmpToken = 0;
   let timer = null;
   let learn = null;
 
@@ -52,7 +60,7 @@
     ? v.toLocaleString(locale(), { minimumFractionDigits: 1, maximumFractionDigits: 2 })
     : v);
   // Genes: en la representación real, siempre con decimales (5,0 y no 5), para distinguirlos de las otras.
-  const fmtGene = (v) => (repId() === 'real' && typeof v === 'number'
+  const fmtGene = (v) => (curRep() === 'real' && typeof v === 'number'
     ? v.toLocaleString(locale(), { minimumFractionDigits: 1, maximumFractionDigits: 2 })
     : v);
   // params.genes: nombres de los parámetros que son valores de genes (se escriben como en la vista).
@@ -73,6 +81,7 @@
   const spec = () => impl().spec;
   const meta = () => registry.getOperator(state.opId);   // nombre, resumen, subtítulo
   const repId = () => meta().representation;             // 'permutation' | 'binary' | 'real'
+  const curRep = () => (state.view === 'cmp' ? state.cmp.rep : repId());
 
   // ---------- Cortes (según cuántos declare el operador) ----------
 
@@ -163,6 +172,7 @@
     syncControls();
     // Los enlaces a los otros operadores llevan los padres (y cortes) actuales
     el.opSwitch.querySelectorAll('a.op-chip[data-op]').forEach((a) => { a.href = sameProblemHref(a.dataset.op); });
+    el.btnCompare.href = compareHref();
     // El problema ha podido cambiar (padres, cortes, parámetros): refrescar los datos ocultos y la predicción.
     if (state.practice) { renderPracticeGivens(); resetPracticeForm(); }
   }
@@ -367,6 +377,158 @@
     renderPracticeResult(rows);
   }
 
+  // ---------- Comparar operadores ----------
+
+  const cmpView = createCompareView({
+    parents: $('cmpParents'), children: $('cmpChildren'), legend: $('cmpLegend'),
+    table: $('cmpTable'), tableNote: $('cmpTableNote'), defs: $('cmpDefs'),
+  }, {
+    t: (k, p) => t(k, p),
+    metrics: G.compare.METRICS,
+    format: (v) => fmtGene(v),
+    opName: (id) => registry.getOperator(id).name[state.lang],
+    opHref: (row) => opHref(row.id, { variant: row.variant, params: row.params, cuts: row.cuts, draw: state.draw }),
+    opMeta: (row) => cmpMeta(row),
+    value: (m, v) => cmpValue(m, v),
+  });
+
+  const PARAM_SYMBOL = { k: 'k', p: 'p', lambda: 'λ', alpha: 'α', eta: 'η' };
+
+  // Enlace a la página de un operador con los padres actuales y los ajustes dados.
+  function opHref(id, o) {
+    const target = G.operators[id].spec;
+    const q = new URLSearchParams([['op', id], ['lang', state.lang]]);
+    if (o.variant) q.set('v', o.variant);
+    const usesR = target.random || (target.randomVariants && target.randomVariants.indexOf(o.variant) !== -1);
+    if (usesR && o.draw) q.set('r', String(o.draw));
+    (target.params || []).forEach((pr) => { if (o.params && o.params[pr.id] != null) q.set(pr.id, String(o.params[pr.id])); });
+    q.set('p1', state.p1.join('-'));
+    q.set('p2', state.p2.join('-'));
+    if (o.cuts && o.cuts.length) q.set('c', o.cuts.join('-'));
+    q.set('s', String(state.seed));
+    return `#${q.toString()}`;
+  }
+
+  // Enlace a la comparación desde la página de un operador: mismos padres, cortes, variante y parámetros.
+  function compareHref() {
+    const q = new URLSearchParams([['cmp', repId()], ['lang', state.lang], ['from', state.opId]]);
+    if (state.variant) q.set('v', state.variant);
+    if (usesDraw()) q.set('r', String(state.draw));
+    (spec().params || []).forEach((pr) => q.set(pr.id, String(state.params[pr.id])));
+    q.set('p1', state.p1.join('-'));
+    q.set('p2', state.p2.join('-'));
+    if (state.cuts.length) q.set('c', state.cuts.join('-'));
+    q.set('s', String(state.seed));
+    return `#${q.toString()}`;
+  }
+
+  // Ajustes con los que se ha cruzado cada operador: cortes, variante y parámetros.
+  function cmpMeta(row) {
+    const target = G.operators[row.id].spec;
+    const parts = [];
+    const c = row.cuts;
+    if (target.cuts === 2) parts.push(t('cmpSegment', { a: c[0] + 1, b: c[1] }));
+    else if (target.cuts === 1) parts.push(t('cmpCutAfter', { c: c[0] }));
+    else if (target.cuts === 'k') parts.push(c.length === 1 ? t('cmpCutAfter', { c: c[0] }) : t('cmpCutsAfter', { list: c.join(', ') }));
+    if (row.variant) parts.push(`${t('variant').toLowerCase()}: ${G.content[row.id].variants[row.variant].name[state.lang]}`);
+    (target.params || []).forEach((pr) => { if (pr.id !== 'k') parts.push(`${PARAM_SYMBOL[pr.id] || pr.id} = ${fmtValue(row.params[pr.id])}`); });
+    return parts.join(' · ');
+  }
+
+  function cmpValue(m, v) {
+    if (m.kind === 'pct') return v.toLocaleString(locale(), { style: 'percent', maximumFractionDigits: 0 });
+    const d = m.id === 'distance' ? 2 : 1;
+    return v.toLocaleString(locale(), { minimumFractionDigits: d, maximumFractionDigits: d });
+  }
+
+  const cmpOps = (rep) => registry.getRepresentation(rep).operators
+    .filter((op) => op.ready && G.operators[op.id] && G.content[op.id])
+    .map((op) => ({ id: op.id, spec: G.operators[op.id].spec }));
+
+  function compareOpts(reps) {
+    const c = state.cmp;
+    return {
+      rep: c.rep, ops: cmpOps(c.rep), p1: state.p1, p2: state.p2, cuts: c.cuts,
+      from: c.from, variant: c.variant, params: c.params, draw: state.draw, reps, seed: state.seed + 1,
+    };
+  }
+
+  // Primero el ejemplo (rápido); las medias, justo después, para no bloquear el primer dibujado.
+  function recomputeCompare() {
+    const token = ++cmpToken;
+    const c = state.cmp;
+    c.rows = G.compare.compare(compareOpts(0));
+    cmpView.render({ rep: c.rep, n: state.n, p1: state.p1, p2: state.p2, rows: c.rows, reps: CMP_REPS, from: c.from });
+    writeHash();
+    setTimeout(() => {
+      if (token !== cmpToken || state.view !== 'cmp') return;
+      c.rows = G.compare.compare(compareOpts(CMP_REPS));
+      cmpView.setRows(c.rows);
+    }, 30);
+  }
+
+  function renderCompareHeader() {
+    const c = state.cmp;
+    const rep = registry.getRepresentation(c.rep);
+    el.cmpEyebrow.textContent = t('representationOf', { name: rep.name[state.lang] });
+    document.title = t('compareDocTitle', { name: rep.name[state.lang] });
+    if (c.from) {
+      const src = c.rows && c.rows.find((r) => r.id === c.from);
+      el.cmpBackText.textContent = t('compareBackTo', { name: registry.getOperator(c.from).name[state.lang] });
+      el.cmpBack.href = opHref(c.from, { variant: c.variant, params: c.params, cuts: src ? src.cuts : c.cuts, draw: state.draw });
+    } else {
+      el.cmpBackText.textContent = t('allOperators');
+      el.cmpBack.href = `#lang=${state.lang}`;
+    }
+  }
+
+  function showCompare(repIdParam, q) {
+    stop();
+    const ops = cmpOps(repIdParam);
+    const from = ops.some((o) => o.id === q.get('from')) ? q.get('from') : null;
+    const fromSpec = from ? G.operators[from].spec : null;
+    const params = {};
+    if (fromSpec) {
+      (fromSpec.params || []).forEach((pr) => {
+        const v = q.has(pr.id) && q.get(pr.id) !== '' ? Number(q.get(pr.id)) : NaN;
+        params[pr.id] = Number.isFinite(v) && v >= pr.min && v <= pr.max ? v : pr.default;
+      });
+    }
+    const variant = fromSpec && fromSpec.variants && fromSpec.variants.indexOf(q.get('v')) !== -1 ? q.get('v') : null;
+    const r = parseInt(q.get('r'), 10);
+    state.draw = Number.isFinite(r) && r > 0 ? r % 1000000 : R.newSeed() + 1;
+    state.view = 'cmp';
+    state.cmp = { rep: repIdParam, from, variant, params, cuts: [], rows: null };
+
+    const seed = parseInt(q.get('s'), 10);
+    const p1 = (q.get('p1') || '').split('-').filter(Boolean).map(Number);
+    const p2 = (q.get('p2') || '').split('-').filter(Boolean).map(Number);
+    const cuts = (q.get('c') || '').split('-').filter((x) => x !== '').map(Number);
+    if (p1.length && !G.operators[ops[0].id].validateParents(p1, p2)) {
+      Object.assign(state, { p1, p2, n: p1.length, seed: Number.isFinite(seed) ? Math.abs(seed) % 1000000 : state.seed });
+      state.cmp.cuts = cuts.every((c) => Number.isInteger(c) && c >= 0 && c <= p1.length) ? cuts : [];
+    } else {
+      cmpParents(Number.isFinite(seed) ? Math.abs(seed) % 1000000 : R.newSeed(), state.n || 8);
+    }
+
+    el.homeView.hidden = true;
+    el.opView.hidden = true;
+    el.cmpView.hidden = false;
+    recomputeCompare();
+    renderCompareHeader();
+    window.scrollTo(0, 0);
+  }
+
+  // Padres aleatorios para la comparación (los cortes de origen se conservan si siguen valiendo).
+  function cmpParents(seed, n) {
+    const r = R.mulberry32(seed);
+    const gen = GENERATORS[state.cmp.rep];
+    const p1 = gen(r, n);
+    let p2 = gen(r, n);
+    while (p2.join() === p1.join()) p2 = gen(r, n);
+    Object.assign(state, { seed, n, p1, p2 });
+  }
+
   // ---------- Cabecera, selector de operadores y leyenda ----------
 
   const LEGEND = {
@@ -528,6 +690,10 @@
         renderPracticeGivens();
         resetPracticeForm();
       }
+      el.btnCompare.href = compareHref();
+    } else if (state.view === 'cmp') {
+      renderCompareHeader();
+      cmpView.render({ rep: state.cmp.rep, n: state.n, p1: state.p1, p2: state.p2, rows: state.cmp.rows, reps: CMP_REPS, from: state.cmp.from });
     }
     writeHash();
   }
@@ -538,12 +704,13 @@
     stop();
     state.view = 'home';
     el.opView.hidden = true;
+    el.cmpView.hidden = true;
     el.homeView.hidden = false;
   }
 
   function showOp(id, q) {
     stop();
-    const changed = id !== state.opId;
+    const changed = id !== state.opId || state.view !== 'op';
     state.view = 'op';
     state.opId = id;
     state.errKey = null;
@@ -553,6 +720,7 @@
     el.narrationBox.hidden = false;
     el.btnPractice.textContent = t('practiceMode');
     el.homeView.hidden = true;
+    el.cmpView.hidden = true;
     el.opView.hidden = false;   // visible antes de dibujar, para medir el ancho disponible
 
     const vs = impl().spec.variants;
@@ -591,7 +759,9 @@
     const q = new URLSearchParams(location.hash.replace(/^#/, ''));
     if (i18n.languages.indexOf(q.get('lang')) !== -1) state.lang = q.get('lang');
     const id = q.get('op');
+    const cmp = q.get('cmp');
     if (id && registry.isReady(id) && G.operators[id] && G.content[id]) showOp(id, q);
+    else if (cmp && registry.getRepresentation(cmp) && cmpOps(cmp).length) showCompare(cmp, q);
     else showHome();
     applyLanguage();
   }
@@ -612,8 +782,23 @@
       });
     }
     if (state.view === 'op') (spec().params || []).forEach((pr) => { params[pr.id] = String(state.params[pr.id]); });
-    const paramIds = state.view === 'op' ? (spec().params || []).map((pr) => pr.id) : [];
-    const order = ['op', 'lang', 'v', 'r'].concat(paramIds, ['p1', 'p2', 'c', 's', 'step']).filter((k) => params[k] != null && params[k] !== '');
+    let paramIds = state.view === 'op' ? (spec().params || []).map((pr) => pr.id) : [];
+    if (state.view === 'cmp') {
+      const c = state.cmp;
+      Object.assign(params, {
+        cmp: c.rep,
+        from: c.from || undefined,
+        v: c.variant || undefined,
+        r: String(state.draw),
+        p1: state.p1.join('-'),
+        p2: state.p2.join('-'),
+        c: c.cuts.length ? c.cuts.join('-') : undefined,
+        s: String(state.seed),
+      });
+      paramIds = Object.keys(c.params);
+      paramIds.forEach((k) => { params[k] = String(c.params[k]); });
+    }
+    const order = ['op', 'cmp', 'lang', 'from', 'v', 'r'].concat(paramIds, ['p1', 'p2', 'c', 's', 'step']).filter((k) => params[k] != null && params[k] !== '');
     const h = new URLSearchParams(order.map((k) => [k, params[k]])).toString();
     if (location.hash.replace(/^#/, '') === h) return;
     try { history.replaceState(null, '', `#${h}`); } catch (err) { /* file:// en algunos navegadores */ }
@@ -684,6 +869,16 @@
   });
 
   el.btnPractice.addEventListener('click', () => setPracticeMode(!state.practice));
+  el.cmpRandom.addEventListener('click', () => {
+    cmpParents(R.newSeed(), state.n);
+    recomputeCompare();
+    renderCompareHeader();
+  });
+  el.cmpDraw.addEventListener('click', () => {
+    state.draw = R.newSeed() + 1;
+    recomputeCompare();
+    renderCompareHeader();
+  });
   el.btnPracticeExit.addEventListener('click', () => setPracticeMode(false));
   el.practiceForm.addEventListener('submit', (e) => { e.preventDefault(); gradePractice(); });
 

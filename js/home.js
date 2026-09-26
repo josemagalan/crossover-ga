@@ -52,6 +52,13 @@
         rep.operators.forEach((op) => list.append(opItem(op, l)));
 
         card.append(head, chromo, node('p', 'rep-desc', rep.desc[l]), list);
+        if (rep.operators.filter((op) => op.ready).length > 1) {
+          const cmp = node('a', 'cmp-link');
+          cmp.href = `#cmp=${rep.id}&lang=${l}`;
+          cmp.append(node('span', null, t('compareHomeLink')), node('span', 'op-go', '→'));
+          cmp.querySelector('.op-go').setAttribute('aria-hidden', 'true');
+          card.append(cmp);
+        }
         return card;
       }));
     }
