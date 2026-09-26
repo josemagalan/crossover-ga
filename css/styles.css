@@ -772,6 +772,7 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; text
 .cmp-defs { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px 16px; font-size: 0.93rem; line-height: 1.5; }
 .cmp-defs dt { font-weight: 700; }
 .cmp-defs dd { margin: 0; color: var(--muted); max-width: 80ch; }
+.cmp-refs { margin-top: 16px; max-width: 90ch; line-height: 1.5; }
 
 .foot { text-align: center; margin-top: 6px; }
 

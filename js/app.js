@@ -381,7 +381,7 @@
 
   const cmpView = createCompareView({
     parents: $('cmpParents'), children: $('cmpChildren'), legend: $('cmpLegend'),
-    table: $('cmpTable'), tableNote: $('cmpTableNote'), defs: $('cmpDefs'),
+    table: $('cmpTable'), tableNote: $('cmpTableNote'), defs: $('cmpDefs'), refs: $('cmpRefs'),
   }, {
     t: (k, p) => t(k, p),
     metrics: G.compare.METRICS,

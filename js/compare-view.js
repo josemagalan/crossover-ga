@@ -145,6 +145,7 @@
       el.table.replaceChildren(thead, tbody);
 
       el.defs.replaceChildren(...ms.flatMap((m) => [node('dt', null, t(`metric_${m.id}`)), node('dd', null, t(`metricDesc_${m.id}`))]));
+      el.refs.textContent = t(`compareRefs_${model.rep}`);
     }
 
     return {

@@ -281,8 +281,8 @@ if (typeof module !== 'undefined' && module.exports) {
       details: { es: 'Addison-Wesley', en: 'Addison-Wesley' },
       url: null,
       note: {
-        es: 'Describe CX con un ejemplo paso a paso: el primer ciclo sale de un padre y el resto de posiciones, del otro.',
-        en: 'Describes CX with a step-by-step example: the first cycle comes from one parent and the remaining positions from the other.',
+        es: 'Describe CX con un ejemplo paso a paso (pp. 174–175): el primer ciclo sale de un padre y el resto de posiciones, del otro.',
+        en: 'Describes CX with a step-by-step example (pp. 174–175): the first cycle comes from one parent and the remaining positions from the other.',
       },
     },
     {
@@ -310,6 +310,19 @@ if (typeof module !== 'undefined' && module.exports) {
       note: {
         es: 'Revisión de representaciones y operadores para el problema del viajante.',
         en: 'Review of representations and operators for the travelling salesman problem.',
+      },
+    },
+    {
+      id: 'talbi-2009',
+      type: 'book',
+      authors: 'Talbi, E.-G.',
+      year: '2009',
+      title: 'Metaheuristics: From design to implementation',
+      details: { es: 'Wiley', en: 'Wiley' },
+      url: 'https://doi.org/10.1002/9780470496916',
+      note: {
+        es: 'Manual de metaheurísticas. En el apartado 3.3.2.2 (p. 219) cita el cruce de ciclos entre otros cruces para permutaciones, como el que conserva las posiciones absolutas de los genes.',
+        en: 'Metaheuristics textbook. In section 3.3.2.2 (p. 219) it lists cycle crossover among other permutation crossovers, as the one that preserves the absolute positions of the genes.',
       },
     },
   ];

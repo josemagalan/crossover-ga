@@ -170,6 +170,10 @@ if (typeof module !== 'undefined' && module.exports) {
       es: 'Revisión de los operadores para codificación real, con una comparación experimental; incluye el cruce discreto.',
       en: 'Review of operators for real coding, with an experimental comparison; includes discrete crossover.',
     }),
+    C.ref('talbi', {
+      es: 'Manual de metaheurísticas. El apartado 3.3.2.2 (pp. 214–215) presenta el cruce uniforme y señala que, en representación real, se usa junto a los de un punto y n puntos.',
+      en: 'Metaheuristics textbook. Section 3.3.2.2 (pp. 214–215) presents uniform crossover and notes that, for real-valued representations, it is used alongside one-point and n-point crossover.',
+    }),
   ];
 
   const H = C.makeHelpers(codeTemplates, codeComments, pseudocode);

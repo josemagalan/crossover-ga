@@ -144,6 +144,18 @@ if (typeof module !== 'undefined' && module.exports) {
       es: 'Manual de referencia de computación evolutiva, con los operadores de cruce para representación binaria.',
       en: 'Reference textbook on evolutionary computation, including crossover operators for binary representations.',
     }),
+    C.ref('talbi', {
+      es: 'Manual de metaheurísticas. El apartado 3.3.2.2 (p. 214, fig. 3.16) presenta el cruce en n puntos, con el de dos puntos como ejemplo, como forma de reducir la disrupción del cruce en un punto.',
+      en: 'Metaheuristics textbook. Section 3.3.2.2 (p. 214, fig. 3.16) presents n-point crossover, with two-point crossover as its example, as a way to reduce the disruption of one-point crossover.',
+    }),
+    C.ref('bautista', {
+      es: 'Manual en español de metaheurísticas aplicadas a problemas de ingeniería de organización industrial. El cruce en dos puntos se trata en el apartado 8.3.2 (p. 187).',
+      en: 'Spanish-language textbook on metaheuristics applied to industrial engineering problems. Two-point crossover is covered in section 8.3.2 (p. 187).',
+    }),
+    C.ref('whitley', {
+      es: 'El apartado 3.1.1 explica, siguiendo a De Jong, que el cruce en dos puntos trata el cromosoma como un anillo, del que el cruce en un punto es un caso particular.',
+      en: 'Section 3.1.1 explains, following De Jong, that two-point crossover treats the chromosome as a ring, of which one-point crossover is a special case.',
+    }),
   ];
 
   const H = C.makeHelpers(codeTemplates, codeComments, pseudocode);

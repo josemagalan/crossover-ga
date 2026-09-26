@@ -299,8 +299,8 @@ if (typeof module !== 'undefined' && module.exports) {
       details: { es: 'Addison-Wesley', en: 'Addison-Wesley' },
       url: null,
       note: {
-        es: 'Libro clásico sobre algoritmos genéticos, del autor de PMX. Trata los operadores de reordenación para problemas de permutaciones.',
-        en: 'Classic book on genetic algorithms by the author of PMX. Covers reordering operators for permutation problems.',
+        es: 'Libro clásico sobre algoritmos genéticos, del autor de PMX. Trata los operadores de reordenación para problemas de permutaciones; PMX, en las pp. 170–174.',
+        en: 'Classic book on genetic algorithms by the author of PMX. Covers reordering operators for permutation problems; PMX on pp. 170–174.',
       },
     },
     {
@@ -314,6 +314,32 @@ if (typeof module !== 'undefined' && module.exports) {
       note: {
         es: 'Introducción práctica y gratuita a las metaheurísticas y los algoritmos evolutivos.',
         en: 'Practical, free introduction to metaheuristics and evolutionary algorithms.',
+      },
+    },
+    {
+      id: 'talbi-2009',
+      type: 'book',
+      authors: 'Talbi, E.-G.',
+      year: '2009',
+      title: 'Metaheuristics: From design to implementation',
+      details: { es: 'Wiley', en: 'Wiley' },
+      url: 'https://doi.org/10.1002/9780470496916',
+      note: {
+        es: 'Manual de metaheurísticas. El apartado 3.3.2.2 (pp. 218–219, fig. 3.20) describe PMX con un ejemplo paso a paso.',
+        en: 'Metaheuristics textbook. Section 3.3.2.2 (pp. 218–219, fig. 3.20) describes PMX with a step-by-step example.',
+      },
+    },
+    {
+      id: 'bautista-valhondo-2020',
+      type: 'book',
+      authors: 'Bautista-Valhondo, J.',
+      year: '2020',
+      title: 'Metaheurísticas en ingeniería',
+      details: { es: 'Dextra, colección Investigación operativa', en: 'Dextra, Investigación operativa series' },
+      url: null,
+      note: {
+        es: 'Manual en español de metaheurísticas aplicadas a problemas de ingeniería de organización industrial. PMX («cruzamiento por emparejado parcial») se trata en el apartado 8.3.4 (p. 189), y el problema del viajante, en el 2.2.',
+        en: 'Spanish-language textbook on metaheuristics applied to industrial engineering problems. PMX is covered in section 8.3.4 (p. 189), and the travelling salesman problem in section 2.2.',
       },
     },
   ];

@@ -141,6 +141,18 @@ if (typeof module !== 'undefined' && module.exports) {
       es: 'Presenta el algoritmo del cruce en un punto que usan las transparencias del curso.',
       en: 'Presents the one-point crossover algorithm used in the course slides.',
     }),
+    C.ref('talbi', {
+      es: 'Manual de metaheurísticas. Su apartado 3.3.2.2 (pp. 213–215) repasa las propiedades deseables de un cruce (heredabilidad, respeto, validez) y presenta el cruce en un punto y el efecto de disrupción que produce en los extremos del cromosoma.',
+      en: 'Metaheuristics textbook. Section 3.3.2.2 (pp. 213–215) reviews the desirable properties of a crossover (heritability, respect, validity) and presents one-point crossover and the disruption it causes at the ends of the chromosome.',
+    }),
+    C.ref('bautista', {
+      es: 'Manual en español de metaheurísticas aplicadas a problemas de ingeniería de organización industrial. El cruce en un punto se trata en el apartado 8.3.1 (p. 186).',
+      en: 'Spanish-language textbook on metaheuristics applied to industrial engineering problems. One-point crossover is covered in section 8.3.1 (p. 186).',
+    }),
+    C.ref('whitley', {
+      es: 'Tutorial clásico y muy citado. El apartado 3.1 relaciona el cruce en un punto con los esquemas, y el 3.1.2 explica por qué rompe con más facilidad los esquemas de mayor longitud de definición.',
+      en: 'Classic, widely cited tutorial. Section 3.1 relates one-point crossover to schemata, and section 3.1.2 explains why it more easily breaks schemata with a longer defining length.',
+    }),
   ];
 
   const H = C.makeHelpers(codeTemplates, codeComments, pseudocode);

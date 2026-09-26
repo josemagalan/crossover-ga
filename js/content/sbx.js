@@ -180,6 +180,10 @@ if (typeof module !== 'undefined' && module.exports) {
       es: 'Sitúa el SBX entre los operadores de recombinación para representaciones reales, junto con el aritmético y el BLX-α.',
       en: 'Places SBX among the recombination operators for real-valued representations, alongside arithmetic and BLX-α crossover.',
     }),
+    C.ref('talbi', {
+      es: 'Manual de metaheurísticas. El apartado 3.3.2.2 (pp. 216–217) presenta SBX entre los cruces «centrados en los padres», con la distribución de β y las fórmulas de los dos hijos, e indica que η = 2 es el valor habitual en optimización con un solo objetivo.',
+      en: 'Metaheuristics textbook. Section 3.3.2.2 (pp. 216–217) presents SBX among the “parent-centric” crossovers, with the distribution of β and the formulas for both children, and notes that η = 2 is the usual value in single-objective optimisation.',
+    }),
   ];
 
   const H = C.makeHelpers(codeTemplates, codeComments, pseudocode);

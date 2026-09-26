@@ -190,6 +190,19 @@ if (typeof module !== 'undefined' && module.exports) {
         en: 'Reference textbook on evolutionary computation; covers recombination for each type of representation.',
       },
     },
+    {
+      id: 'talbi-2009',
+      type: 'book',
+      authors: 'Talbi, E.-G.',
+      year: '2009',
+      title: 'Metaheuristics: From design to implementation',
+      details: { es: 'Wiley', en: 'Wiley' },
+      url: 'https://doi.org/10.1002/9780470496916',
+      note: {
+        es: 'Manual de metaheurísticas. En el apartado 3.3.2.2 (p. 218) explica que aplicar a permutaciones los cruces clásicos produce soluciones que no son permutaciones, y que por eso se han diseñado operadores específicos como OX y PMX.',
+        en: 'Metaheuristics textbook. In section 3.3.2.2 (p. 218) it explains that applying the classic crossovers to permutations produces solutions that are not permutations, which is why specific operators such as OX and PMX have been designed.',
+      },
+    },
   ];
 
   function getCode(kind, lang) {

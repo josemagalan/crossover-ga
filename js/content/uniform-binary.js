@@ -172,6 +172,14 @@ if (typeof module !== 'undefined' && module.exports) {
       es: 'Introducción clásica a los algoritmos genéticos, con ejemplos de uso del cruce uniforme.',
       en: 'Classic introduction to genetic algorithms, with examples using uniform crossover.',
     }),
+    C.ref('talbi', {
+      es: 'Manual de metaheurísticas. El apartado 3.3.2.2 (pp. 214–215, fig. 3.17) presenta el cruce uniforme: cada gen se toma al azar de uno de los padres, sin depender del tamaño de los segmentos.',
+      en: 'Metaheuristics textbook. Section 3.3.2.2 (pp. 214–215, fig. 3.17) presents uniform crossover: each gene is taken at random from one of the parents, regardless of segment size.',
+    }),
+    C.ref('whitley', {
+      es: 'El apartado 4.2.1 analiza el cruce uniforme: cada bit se hereda de forma independiente, sin ligamiento entre bits, y la probabilidad de romper un esquema depende solo de su orden, no de su longitud de definición.',
+      en: 'Section 4.2.1 analyses uniform crossover: each bit is inherited independently, with no linkage between bits, and the probability of breaking a schema depends only on its order, not on its defining length.',
+    }),
   ];
 
   const H = C.makeHelpers(codeTemplates, codeComments, pseudocode);

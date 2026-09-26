@@ -161,6 +161,14 @@ if (typeof module !== 'undefined' && module.exports) {
       es: 'Introducción clásica a los algoritmos genéticos; menciona las versiones de cruce en varios puntos.',
       en: 'Classic introduction to genetic algorithms; mentions multi-point versions of crossover.',
     }),
+    C.ref('talbi', {
+      es: 'Manual de metaheurísticas. El apartado 3.3.2.2 (p. 214, fig. 3.16) presenta el cruce en n puntos como generalización del de un punto.',
+      en: 'Metaheuristics textbook. Section 3.3.2.2 (p. 214, fig. 3.16) presents n-point crossover as the generalisation of one-point crossover.',
+    }),
+    C.ref('whitley', {
+      es: 'El apartado 3.1.1 compara los cruces con varios puntos de corte: los esquemas cuyos genes están cerca en el cromosoma tienen menos probabilidad de romperse.',
+      en: 'Section 3.1.1 compares crossovers with several cut points: schemata whose genes are close together on the chromosome are less likely to be broken.',
+    }),
   ];
 
   const H = C.makeHelpers(codeTemplates, codeComments, pseudocode);

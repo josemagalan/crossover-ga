@@ -91,6 +91,34 @@
       details: { es: '(2.ª ed.). Springer, Natural Computing Series', en: '(2nd ed.). Springer, Natural Computing Series' },
       url: 'https://doi.org/10.1007/978-3-662-44874-8',
     },
+    talbi: {
+      id: 'talbi-2009',
+      type: 'book',
+      authors: 'Talbi, E.-G.',
+      year: '2009',
+      title: 'Metaheuristics: From design to implementation',
+      details: { es: 'Wiley', en: 'Wiley' },
+      url: 'https://doi.org/10.1002/9780470496916',
+    },
+    bautista: {
+      id: 'bautista-valhondo-2020',
+      type: 'book',
+      authors: 'Bautista-Valhondo, J.',
+      year: '2020',
+      title: 'Metaheurísticas en ingeniería',
+      details: { es: 'Dextra, colección Investigación operativa', en: 'Dextra, Investigación operativa series' },
+      url: null,
+    },
+    whitley: {
+      id: 'whitley-1994',
+      type: 'article',
+      authors: 'Whitley, D.',
+      year: '1994',
+      title: 'A genetic algorithm tutorial',
+      container: 'Statistics and Computing',
+      details: { es: '4(2), 65–85', en: '4(2), 65–85' },
+      url: 'https://doi.org/10.1007/BF00175354',
+    },
   };
 
   /** Referencia compartida con una nota propia del operador. */
@@ -111,7 +139,7 @@
     };
   }
 
-  const api = { narration, cutsStepLines, ref, makeHelpers };
+  const api = { narration, cutsStepLines, ref, refs, makeHelpers };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else ((root.GAX = root.GAX || {}).contentShared = root.GAX.contentShared || {}).binary = api;
 })(typeof self !== 'undefined' ? self : this);

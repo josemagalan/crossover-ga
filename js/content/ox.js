@@ -292,8 +292,8 @@ if (typeof module !== 'undefined' && module.exports) {
       details: { es: 'Addison-Wesley', en: 'Addison-Wesley' },
       url: null,
       note: {
-        es: 'Describe la versión de OX con dos cortes (la variante clásica de esta herramienta) junto a PMX y CX.',
-        en: 'Describes the two-cut version of OX (this tool’s classic variant) alongside PMX and CX.',
+        es: 'Describe la versión de OX con dos cortes (la variante clásica de esta herramienta) junto a PMX y CX (p. 174), y resume la diferencia: PMX tiende a respetar la posición absoluta y OX, el orden relativo.',
+        en: 'Describes the two-cut version of OX (this tool’s classic variant) alongside PMX and CX (p. 174), and sums up the difference: PMX tends to respect absolute position and OX relative order.',
       },
     },
     {
@@ -321,6 +321,32 @@ if (typeof module !== 'undefined' && module.exports) {
       note: {
         es: 'Manual de referencia de computación evolutiva, con los operadores de cruce para permutaciones.',
         en: 'Reference textbook on evolutionary computation, including crossover operators for permutations.',
+      },
+    },
+    {
+      id: 'talbi-2009',
+      type: 'book',
+      authors: 'Talbi, E.-G.',
+      year: '2009',
+      title: 'Metaheuristics: From design to implementation',
+      details: { es: 'Wiley', en: 'Wiley' },
+      url: 'https://doi.org/10.1002/9780470496916',
+      note: {
+        es: 'Manual de metaheurísticas. El apartado 3.3.2.2 (p. 218, fig. 3.19) describe OX leyendo el Padre 2 y rellenando a partir del segundo corte (la variante «Clásica (Goldberg, 1989)» de esta herramienta), y señala que así conserva del Padre 1 el orden relativo, las adyacencias y las posiciones, y del Padre 2 solo el orden relativo.',
+        en: 'Metaheuristics textbook. Section 3.3.2.2 (p. 218, fig. 3.19) describes OX reading Parent 2 and filling from the second cut (this tool’s “Classic (Goldberg, 1989)” variant), and notes that it then keeps the relative order, adjacencies and positions of Parent 1, and only the relative order of Parent 2.',
+      },
+    },
+    {
+      id: 'bautista-valhondo-2020',
+      type: 'book',
+      authors: 'Bautista-Valhondo, J.',
+      year: '2020',
+      title: 'Metaheurísticas en ingeniería',
+      details: { es: 'Dextra, colección Investigación operativa', en: 'Dextra, Investigación operativa series' },
+      url: null,
+      note: {
+        es: 'Manual en español de metaheurísticas aplicadas a problemas de ingeniería de organización industrial. OX («cruzamiento por orden de genes») se trata en el apartado 8.3.3 (p. 188), y el problema del viajante, en el 2.2.',
+        en: 'Spanish-language textbook on metaheuristics applied to industrial engineering problems. OX is covered in section 8.3.3 (p. 188), and the travelling salesman problem in section 2.2.',
       },
     },
   ];

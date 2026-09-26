@@ -170,6 +170,10 @@ if (typeof module !== 'undefined' && module.exports) {
       es: 'Trata la recombinación aritmética (simple, de un gen y completa) para representaciones reales.',
       en: 'Covers arithmetic recombination (simple, single and whole) for real-valued representations.',
     }),
+    C.ref('talbi', {
+      es: 'Manual de metaheurísticas. El apartado 3.3.2.2 (p. 215) presenta el cruce intermedio o aritmético, oᵢ = α·x₁ᵢ + (1 − α)·x₂ᵢ (su α es el λ de esta herramienta), entre los cruces «centrados en la media»; en la p. 219 lo extiende a más de dos padres.',
+      en: 'Metaheuristics textbook. Section 3.3.2.2 (p. 215) presents intermediate or arithmetic crossover, oᵢ = α·x₁ᵢ + (1 − α)·x₂ᵢ (its α is this tool’s λ), among the “mean-centric” crossovers; on p. 219 it extends it to more than two parents.',
+    }),
   ];
 
   const H = C.makeHelpers(codeTemplates, codeComments, pseudocode);
