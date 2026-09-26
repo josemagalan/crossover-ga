@@ -2,7 +2,7 @@
 
 Herramienta docente interactiva (D3.js) que ilustra paso a paso los operadores de cruce de los algoritmos genéticos, clasificados por tipo de representación. Está pensada para alumnos de grado en Informática.
 
-**Estado:** disponibles los cruces binarios en un punto, en dos puntos, en n puntos y uniforme (todos explicados con la máscara de cruce de Syswerda), los cruces reales uniforme, aritmético (con el peso λ ajustable), BLX-α (con el parámetro α) y SBX (con el parámetro η) —estos dos últimos con una vista 2D adicional que muestra los padres, una nube de otros hijos posibles y los hijos de la traza—, los cruces permutacionales PMX, OX y CX (OX y CX con tres variantes cada uno) y un contraejemplo que muestra por qué el cruce en un punto no sirve para permutaciones.
+**Estado:** disponibles los cruces binarios en un punto, en dos puntos, en n puntos y uniforme (todos explicados con la máscara de cruce de Syswerda), los cruces reales uniforme, aritmético (con el peso λ ajustable), BLX-α (con el parámetro α) y SBX (con el parámetro η) —estos dos últimos con una vista 2D adicional que muestra los padres, una nube de otros hijos posibles y los hijos de la traza—, los cruces permutacionales PMX, OX, CX (OX y CX con tres variantes cada uno) y ERX (con su tabla de adyacencias y dos variantes) y un contraejemplo que muestra por qué el cruce en un punto no sirve para permutaciones.
 
 ## Qué incluye
 
@@ -59,7 +59,7 @@ José Manuel Galán, Universidad de Burgos.
 
 ## English
 
-Interactive teaching tool (D3.js) that illustrates genetic algorithm crossover operators step by step, grouped by representation type. It currently includes the binary one-point, two-point, n-point and uniform crossovers (all explained through Syswerda's crossover mask), the real-valued uniform, arithmetic (with adjustable weight λ), BLX-α (with parameter α) and SBX (with parameter η) crossovers —the latter two with an additional 2D view showing the parents, a cloud of other possible children and the children of the current trace—, the permutation operators PMX, OX and CX (OX and CX with three variants each) and a counterexample showing why one-point crossover fails on permutations.
+Interactive teaching tool (D3.js) that illustrates genetic algorithm crossover operators step by step, grouped by representation type. It currently includes the binary one-point, two-point, n-point and uniform crossovers (all explained through Syswerda's crossover mask), the real-valued uniform, arithmetic (with adjustable weight λ), BLX-α (with parameter α) and SBX (with parameter η) crossovers —the latter two with an additional 2D view showing the parents, a cloud of other possible children and the children of the current trace—, the permutation operators PMX, OX, CX (OX and CX with three variants each) and ERX (with its adjacency table and two variants) and a counterexample showing why one-point crossover fails on permutations.
 
 It also has a "predict the child" practice mode: before watching the animation, write your prediction for both children and check it gene by gene (green/red), with whatever the algorithm draws internally (mask, draws or cycle order) revealed only when it's needed for the prediction to have a single correct answer.
 

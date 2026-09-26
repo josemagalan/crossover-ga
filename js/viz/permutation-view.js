@@ -327,6 +327,66 @@
         chips.select('.ochip-idx').attr('x', sq / 2).attr('y', sq + 13).text((d) => `#${d.j + 1}`);
       },
     },
+
+    // ERX: tabla de adyacencias. Una columna por gen (1…n, no por posición) con sus vecinos
+    // en los dos padres; los genes ya usados se tachan de todas las listas.
+    edges: {
+      caption: 'edgeTable',
+      captionShort: 'edgeTableShort',
+      captionParams: (step) => ({ child: (step.auxChild || 0) + 1 }),
+      height: ({ s }) => {
+        const sq = Math.round(Math.min(34, s * 0.62));
+        const chip = Math.round(sq * 0.78);
+        return sq + 10 + 4 * (chip + 4);
+      },
+      draw() {},
+      show(g, step, items, geo) {
+        const sq = geo.auxSq;
+        const chip = Math.round(sq * 0.78);
+        const cw = Math.min(geo.s, Math.round(chip * 1.35));
+        const lists = step.auxLists || [];
+        const used = new Set(step.auxUsed || []);
+        const cand = new Set(step.auxCand || []);
+        const colX = (j) => geo.x0 + j * geo.cell + (geo.cell - geo.s) / 2;
+        const cols = g.selectAll('g.ecol')
+          .data(items.map((v, j) => ({ v, j, list: lists[j] || [] })), (d) => d.v)
+          .join((enter) => {
+            const c = enter.append('g').attr('class', 'ecol');
+            c.append('rect').attr('class', 'ehead-rect');
+            c.append('text').attr('class', 'ehead-num');
+            return c;
+          });
+        cols.attr('transform', (d) => `translate(${colX(d.j)},${geo.yAux})`)
+          .classed('used', (d) => used.has(d.v) && d.v !== step.auxCurrent && d.v !== step.auxChosen)
+          .classed('current', (d) => d.v === step.auxCurrent)
+          .classed('cand', (d) => cand.has(d.v) && d.v !== step.auxChosen)
+          .classed('chosen', (d) => d.v === step.auxChosen);
+        cols.select('.ehead-rect').attr('width', geo.s).attr('height', sq).attr('rx', 5);
+        cols.select('.ehead-num').attr('x', geo.s / 2).attr('y', sq / 2).attr('dy', '0.36em')
+          .style('font-size', `${Math.round(sq * 0.5)}px`).text((d) => d.v);
+        cols.each(function (d) {
+          const chips = d3.select(this).selectAll('g.echip')
+            .data(d.list, (e) => e.v)
+            .join((enter) => {
+              const c = enter.append('g').attr('class', 'echip');
+              c.append('rect').attr('class', 'echip-rect');
+              c.append('text').attr('class', 'echip-num');
+              c.append('line').attr('class', 'echip-strike');
+              return c;
+            });
+          chips.attr('transform', (e, k) => `translate(${(geo.s - cw) / 2},${sq + 8 + k * (chip + 4)})`)
+            .classed('removed', (e) => e.removed)
+            .classed('chosen', (e) => d.v === step.auxCurrent && e.v === step.auxChosen);
+          chips.select('.echip-rect').attr('width', cw).attr('height', chip).attr('rx', 4)
+            .style('fill', (e) => (e.m === 'both' ? 'url(#split-both)' : `var(--${e.m})`));
+          chips.select('.echip-num')
+            .attr('class', (e) => `echip-num ${e.m === 'both' ? 'gene-num-halo' : `ink-${e.m}`}`)
+            .attr('x', cw / 2).attr('y', chip / 2).attr('dy', '0.36em')
+            .style('font-size', `${Math.round(chip * 0.55)}px`).text((e) => e.v);
+          chips.select('.echip-strike').attr('x1', 2).attr('x2', cw - 2).attr('y1', chip - 3).attr('y2', 3);
+        });
+      },
+    },
   };
 
   function createPermutationView(svgEl, opts) {
@@ -351,6 +411,10 @@
       pat.append('rect').attr('width', 9).attr('height', 9).style('fill', `var(--${o})`);
       pat.append('rect').attr('width', 4).attr('height', 9).attr('class', 'hatch-stripe');
     });
+
+    // Relleno partido (mitad Padre 1, mitad Padre 2): arista que está en los dos padres (ERX)
+    const split = defs.append('linearGradient').attr('id', 'split-both').attr('x1', 0).attr('x2', 1).attr('y1', 0).attr('y2', 0);
+    [[0, 'p1'], [0.5, 'p1'], [0.5, 'p2'], [1, 'p2']].forEach(([o, c]) => split.append('stop').attr('offset', o).style('stop-color', `var(--${c})`));
 
     defs.append('marker')
       .attr('id', 'arrowhead')
@@ -406,14 +470,18 @@
       const mapped = d.kind === 'mapped';
       const blend = d.kind === 'blend';   // gen combinado (cruce aritmético): w = parte del Padre 1
       const wide = d.kind === 'wide';     // gen sorteado en un intervalo (BLX-α, SBX): puede salir del de los padres
+      const jump = d.kind === 'jump';     // ERX: gen elegido al azar, sin arista de ningún padre
+      const both = d.kind === 'both';     // ERX: arista que está en los dos padres
       const fillOf = () => {
+        if (jump) return 'var(--card)';
+        if (both) return 'url(#split-both)';
         if (mapped) return `url(#hatch-${d.origin})`;
         if (blend) return `color-mix(in srgb, var(--p1) ${Math.round(d.w * 100)}%, var(--p2))`;
         if (wide) return 'var(--wide)';
         return `var(--${d.origin})`;
       };
       g.append('rect')
-        .attr('class', 'gene-rect')
+        .attr('class', jump ? 'gene-rect jump' : 'gene-rect')
         .attr('width', s).attr('height', s)
         .attr('rx', Math.max(4, s * 0.14))
         .style('fill', fillOf());
@@ -421,7 +489,7 @@
       // Los valores largos (reales con decimales) se escriben más pequeños para que quepan.
       const fs = Math.min(s * 0.44, (s * 0.9) / (txt.length * 0.58));
       g.append('text')
-        .attr('class', mapped || blend || wide ? 'gene-num gene-num-halo' : `gene-num ink-${d.origin}`)
+        .attr('class', mapped || blend || wide || jump || both ? 'gene-num gene-num-halo' : `gene-num ink-${d.origin}`)
         .attr('x', s / 2).attr('y', s / 2)
         .attr('dy', '0.36em')
         .style('font-size', `${Math.round(fs)}px`)
@@ -663,7 +731,7 @@
       const caption = gLabels.selectAll('text.aux-caption').classed('visible', !!step.auxVisible);
       if (problem.aux) {
         const A = AUX[problem.aux.type];
-        if (A.captionParams) caption.text(label(A.caption, A.captionParams(step)));
+        if (A.captionParams) caption.text(label((geo.compact && A.captionShort) || A.caption, A.captionParams(step)));
         A.show(gAux, step, problem.aux.items, geo, label, fmt);
       }
 

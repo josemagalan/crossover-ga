@@ -294,6 +294,13 @@
       rows.push({ label: t(state.opId === 'blx' ? 'practiceGivenBlxLabel' : 'practiceGivenSbxLabel'), value: perGene.join(' · ') });
     }
 
+    if (state.opId === 'erx' && Array.isArray(r.picks) && r.picks.length) {
+      const value = r.picks.map((p) => `${t(p.child === 0 ? 'child1Short' : 'child2Short')}: ${p.kind === 'tie'
+        ? t('practiceErxTie', { options: p.options.join('/'), v: p.pick })
+        : t('practiceErxJump', { v: p.pick })}`).join(' · ');
+      rows.push({ label: t('practiceGivenErxLabel'), value });
+    }
+
     el.practiceGivens.replaceChildren();
     el.practiceGivens.hidden = !rows.length;
     rows.forEach((row) => {
@@ -540,6 +547,8 @@
     link: ['sw-link', 'legendLink'],
     mask: ['sw-mask', 'legendMask'],
     blend: ['sw-blend', 'legendBlend'],
+    both: ['sw-both', 'legendBoth'],
+    jump: ['sw-jump', 'legendJump'],
     cloud: ['sw-cloud', 'legendCloud'],
     cloudChild1: ['sw-cloud-c1', 'legendCloudChild1'],
     cloudChild2: ['sw-cloud-c2', 'legendCloudChild2'],

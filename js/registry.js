@@ -159,6 +159,16 @@
             en: 'Cycle Crossover: every gene keeps the position it had in one of the parents',
           },
         },
+        {
+          id: 'erx',
+          ready: true,
+          name: { es: 'Cruce ERX', en: 'ERX crossover' },
+          summary: { es: 'Cada gen del hijo sigue a uno de sus vecinos en los padres, con una tabla de adyacencias.', en: 'Each child gene follows one of its neighbours in the parents, using an adjacency table.' },
+          subtitle: {
+            es: 'Edge Recombination Crossover: el hijo hereda las aristas (los genes vecinos) de los padres',
+            en: 'Edge Recombination Crossover: the child inherits the parents’ edges (neighbouring genes)',
+          },
+        },
       ],
     },
   ];

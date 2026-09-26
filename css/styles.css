@@ -452,6 +452,22 @@ summary {
 .cloud-child { stroke: var(--card); stroke-width: 1.5; }
 .cloud-c1 { fill: var(--ink); }
 .cloud-c2 { fill: var(--card); stroke: var(--ink); stroke-width: 2.5; }
+.gene .gene-rect.jump { stroke: var(--muted); stroke-width: 2; stroke-dasharray: 5 4; }
+.ecol { transition: opacity 0.25s; }
+.ecol.used { opacity: 0.3; }
+.ehead-rect { fill: var(--ink); stroke: transparent; stroke-width: 3; }
+.ehead-num { text-anchor: middle; font-weight: 700; fill: var(--card); font-variant-numeric: tabular-nums; }
+.ecol.current .ehead-rect { fill: var(--accent); stroke: var(--focus); }
+.ecol.current .ehead-num { fill: var(--accent-ink); }
+.ecol.cand .ehead-rect { stroke: var(--accent); stroke-dasharray: 4 3; }
+.ecol.chosen .ehead-rect { stroke: var(--focus); stroke-width: 4; }
+.echip { transition: opacity 0.25s; }
+.echip-rect { stroke: transparent; stroke-width: 2.5; }
+.echip-num { text-anchor: middle; font-weight: 700; font-variant-numeric: tabular-nums; }
+.echip-strike { stroke: var(--ink); stroke-width: 2; opacity: 0; }
+.echip.removed { opacity: 0.25; }
+.echip.removed .echip-strike { opacity: 1; }
+.echip.chosen .echip-rect { stroke: var(--focus); }
 .slot-num { text-anchor: middle; font-weight: 600; fill: var(--muted); font-variant-numeric: tabular-nums; pointer-events: none; }
 
 @keyframes shake {
@@ -556,6 +572,8 @@ summary {
 }
 .sw-cloud-c1::after { background: var(--ink); border: 1.5px solid var(--card); }
 .sw-cloud-c2::after { background: var(--card); border: 2.5px solid var(--ink); }
+.sw-both { background: linear-gradient(90deg, var(--p1) 50%, var(--p2) 50%); }
+.sw-jump { background: var(--card); border: 2px dashed var(--muted); }
 .sw-link { width: 24px; height: 12px; border-radius: 0; border-bottom: 3px solid var(--ink); border-right: 3px solid var(--ink); transform: skewX(-20deg); }
 
 /* Para saber más */
