@@ -11,6 +11,7 @@ Herramienta docente interactiva (D3.js) que ilustra paso a paso los operadores d
 - Padres aleatorios (con semilla reproducible) o introducidos a mano, y puntos de corte que se arrastran con el ratón.
 - El ejemplo actual queda guardado en la URL, para proyectarlo en clase o compartirlo.
 - Panel «Para saber más»: explicación del método, pseudocódigo que resalta la línea del paso actual, implementación en Python y JavaScript para copiar o descargar, y referencias.
+- Modo práctica «predice el hijo»: con el botón «Practicar», antes de ver la animación se puede escribir la predicción de los dos hijos y comprobarla gen a gen (verde/rojo), con los datos que el algoritmo sortea por dentro (máscara, sorteos u orden de los ciclos) a la vista cuando hace falta para que la predicción tenga una única respuesta correcta.
 
 ## Uso
 
@@ -57,5 +58,7 @@ José Manuel Galán, Universidad de Burgos.
 ## English
 
 Interactive teaching tool (D3.js) that illustrates genetic algorithm crossover operators step by step, grouped by representation type. It currently includes the binary one-point, two-point, n-point and uniform crossovers (all explained through Syswerda's crossover mask), the real-valued uniform, arithmetic (with adjustable weight λ), BLX-α (with parameter α) and SBX (with parameter η) crossovers —the latter two with an additional 2D view showing the parents, a cloud of other possible children and the children of the current trace—, the permutation operators PMX, OX and CX (OX and CX with three variants each) and a counterexample showing why one-point crossover fails on permutations.
+
+It also has a "predict the child" practice mode: before watching the animation, write your prediction for both children and check it gene by gene (green/red), with whatever the algorithm draws internally (mask, draws or cycle order) revealed only when it's needed for the prediction to have a single correct answer.
 
 Open `index.html` in a browser; no server or internet connection is needed. Run the tests with `npm test` (Node.js 22 or later). Code is released under the MIT licence and the teaching texts under CC BY 4.0.
