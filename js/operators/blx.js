@@ -95,7 +95,7 @@
     representation: 'real',
     cuts: 0,
     aux: 'cloud',
-    legend: ['p1', 'p2', 'cloud'],
+    legend: ['p1', 'p2', 'cloud', 'cloudChild1', 'cloudChild2'],
     params: [{ id: 'alpha', type: 'float', min: 0, max: 1, step: 0.05, default: 0.5 }],
     random: true,           // la página ofrece «Sortear de nuevo»
     run: (p1, p2, cuts, opts) => {

@@ -153,14 +153,14 @@
     cloud: {
       caption: 'cloudCaption',
       captionShort: 'cloudCaptionShort',
-      height: ({ compact }) => (compact ? 200 : 260),
+      height: ({ compact }) => (compact ? 224 : 284),
       draw() {},
       show(g, step, items, geo, label, fmt) {
         const h = geo.auxH;
         const x0 = geo.x0;
         const x1 = geo.x0 + geo.cell * geo.n;
         const y0 = geo.yAux;
-        const padL = 46, padR = 14, padT = 14, padB = 26;
+        const padL = 58, padR = 14, padT = 14, padB = 40;
         const c1 = (step.children[0][0] && step.children[0][1]) ? [step.children[0][0].v, step.children[0][1].v] : null;
         const c2 = (step.children[1][0] && step.children[1][1]) ? [step.children[1][0].v, step.children[1][1].v] : null;
         const xs = [items.p1[0], items.p2[0]].concat(items.cloud.map((p) => p[0])).concat(c1 ? [c1[0]] : []).concat(c2 ? [c2[0]] : []);
@@ -189,6 +189,19 @@
           .attr('x', (d) => d.x).attr('y', (d) => d.y)
           .attr('text-anchor', (d) => d.anchor)
           .attr('dy', (d) => (d.k[0] === 'x' ? '0.9em' : '0.32em'))
+          .text((d) => d.text);
+
+        // Qué representa cada eje: el valor del gen 1 (horizontal) y del gen 2 (vertical).
+        // Los números de las esquinas (arriba) son solo el rango que ocupan estos puntos,
+        // no los límites teóricos del gen.
+        const axisLabels = [
+          { k: 'ax', x: (x0 + padL + x1 - padR) / 2, y: y0 + h - 6, rotate: 0, text: label('cloudAxisX') },
+          { k: 'ay', x: x0 + 14, y: y0 + padT + (h - padT - padB) / 2, rotate: -90, text: label('cloudAxisY') },
+        ];
+        g.selectAll('text.cloud-axis-label').data(axisLabels, (d) => d.k).join('text')
+          .attr('class', 'cloud-axis-label')
+          .attr('text-anchor', 'middle')
+          .attr('transform', (d) => (d.rotate ? `translate(${d.x},${d.y}) rotate(${d.rotate})` : `translate(${d.x},${d.y})`))
           .text((d) => d.text);
 
         // Nube de hijos posibles (mismos padres y parámetro, otros sorteos)

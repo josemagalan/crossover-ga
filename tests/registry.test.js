@@ -12,7 +12,7 @@ const rng = require('../js/rng.js');
 const B = require('../js/operators/bin-utils.js');
 const U = require('../js/operators/real-utils.js');
 
-const LEGEND_KEYS = ['p1', 'p2', 'mapped', 'conflict', 'segment', 'link', 'mask', 'blend', 'cloud'];
+const LEGEND_KEYS = ['p1', 'p2', 'mapped', 'conflict', 'segment', 'link', 'mask', 'blend', 'cloud', 'cloudChild1', 'cloudChild2'];
 const ops = registry.representations.flatMap((rep) => rep.operators.map((op) => Object.assign({ rep }, op)));
 
 test('ids únicos y textos en español e inglés', () => {
@@ -58,7 +58,7 @@ for (const op of ops.filter((o) => o.ready)) {
         res.steps.forEach((s) => keys.add(s.text.key));
       }
     }
-    const legendLabels = { mapped: 'legendMapped', link: 'legendLink', mask: 'legendMask', blend: 'legendBlend', cloud: 'legendCloud' };
+    const legendLabels = { mapped: 'legendMapped', link: 'legendLink', mask: 'legendMask', blend: 'legendBlend', cloud: 'legendCloud', cloudChild1: 'legendCloudChild1', cloudChild2: 'legendCloudChild2' };
     for (const lang of ['es', 'en']) {
       const has = (k) => (content.narration[lang] && content.narration[lang][k] != null) || i18n.dict[lang][k] != null;
       keys.forEach((k) => assert.ok(has(k), `${lang}: falta el texto «${k}»`));

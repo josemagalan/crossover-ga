@@ -63,12 +63,20 @@
     es: {
       cloudCaption: 'Genes 1 y 2 de muchos hijos posibles con estos mismos padres y este mismo parámetro',
       cloudCaptionShort: 'Genes 1 y 2 de muchos hijos posibles',
-      legendCloud: 'Otro hijo posible con los mismos padres (resaltados: los hijos de esta traza)',
+      cloudAxisX: 'Gen 1',
+      cloudAxisY: 'Gen 2',
+      legendCloud: 'Otro hijo posible con los mismos padres y parámetro',
+      legendCloudChild1: 'Hijo 1 de esta traza (rombo relleno)',
+      legendCloudChild2: 'Hijo 2 de esta traza (rombo hueco)',
     },
     en: {
       cloudCaption: 'Genes 1 and 2 of many possible children with these same parents and this same parameter',
       cloudCaptionShort: 'Genes 1 and 2 of many possible children',
-      legendCloud: 'Another possible child with the same parents (highlighted: this trace’s children)',
+      cloudAxisX: 'Gene 1',
+      cloudAxisY: 'Gene 2',
+      legendCloud: 'Another possible child with the same parents and parameter',
+      legendCloudChild1: 'This trace’s child 1 (filled diamond)',
+      legendCloudChild2: 'This trace’s child 2 (hollow diamond)',
     },
   };
 

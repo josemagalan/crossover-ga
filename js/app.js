@@ -246,6 +246,8 @@
     mask: ['sw-mask', 'legendMask'],
     blend: ['sw-blend', 'legendBlend'],
     cloud: ['sw-cloud', 'legendCloud'],
+    cloudChild1: ['sw-cloud-c1', 'legendCloudChild1'],
+    cloudChild2: ['sw-cloud-c2', 'legendCloudChild2'],
   };
 
   // Enlace a otro operador de la misma representación con los mismos padres (y cortes, si usa los mismos),

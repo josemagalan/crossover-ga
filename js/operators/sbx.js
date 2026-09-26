@@ -101,7 +101,7 @@
     representation: 'real',
     cuts: 0,
     aux: 'cloud',
-    legend: ['p1', 'p2', 'cloud'],
+    legend: ['p1', 'p2', 'cloud', 'cloudChild1', 'cloudChild2'],
     params: [{ id: 'eta', type: 'int', min: 1, max: 20, step: 1, default: 2 }],
     random: true,           // la página ofrece «Sortear de nuevo»
     run: (p1, p2, cuts, opts) => {
