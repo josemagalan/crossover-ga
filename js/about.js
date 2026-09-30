@@ -41,6 +41,7 @@
       thanksTitle: 'Agradecimientos',
       thanks: 'Agradecemos al programa Claude for Science de Anthropic su apoyo al desarrollo de esta herramienta, que se ha realizado con la ayuda de Claude.',
       foot: 'Acerca de',
+      footMoodle: 'Preguntas para Moodle',
       footLicence: 'Código MIT · Textos CC BY 4.0',
     },
     en: {
@@ -56,6 +57,7 @@
       thanksTitle: 'Acknowledgements',
       thanks: 'We thank Anthropic’s Claude for Science programme for supporting the development of this tool, which was built with the help of Claude.',
       foot: 'About',
+      footMoodle: 'Moodle questions',
       footLicence: 'Code MIT · Texts CC BY 4.0',
     },
   };
@@ -135,7 +137,9 @@
     about.href = `#page=about&lang=${lang}`;
     const gh = node('a', null, 'GitHub');
     gh.href = REPO;
-    links.append(about, document.createTextNode(' · '), gh, document.createTextNode(` · ${T.footLicence}`));
+    const moodle = node('a', null, T.footMoodle);
+    moodle.href = `#page=moodle&lang=${lang}`;
+    links.append(about, document.createTextNode(' · '), moodle, document.createTextNode(' · '), gh, document.createTextNode(` · ${T.footLicence}`));
     info.append(links);
     container.replaceChildren(logoRow('site-foot-logos'), info);
   }

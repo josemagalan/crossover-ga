@@ -888,3 +888,35 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; text
   .gene.conflict { animation: none; }
   * { transition-duration: 0.01ms !important; }
 }
+
+/* ---------- Bancos de preguntas para Moodle ---------- */
+.home-extra { margin: 22px 0 0; text-align: center; font-size: 0.95rem; }
+.home-extra a { color: var(--muted); text-decoration: none; border-bottom: 1px solid var(--line); }
+.home-extra a:hover { color: var(--ink); border-color: var(--muted); }
+.moodle { max-width: 900px; }
+.moodle h2 { font-size: 1.1rem; margin: 22px 0 8px; }
+.mq-group { border: 1px solid var(--line); border-radius: 10px; margin: 0 0 12px; padding: 10px 14px 12px; min-width: 0; }
+.mq-group legend { font-weight: 600; padding: 0 6px; }
+.mq-group .hint { margin-bottom: 8px; }
+.mq-items { display: flex; flex-wrap: wrap; gap: 8px 22px; }
+.mq-check { display: inline-flex; align-items: flex-start; gap: 8px; cursor: pointer; line-height: 1.4; }
+.mq-check input { accent-color: var(--accent); margin-top: 3px; flex: none; }
+.mq-num { display: inline-flex; align-items: center; gap: 10px; }
+.mq-num input { width: 80px; }
+.mq-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-top: 16px; }
+.mq-summary { margin: 0; flex: 1 1 280px; }
+.mq-status { margin: 0; flex-basis: 100%; color: var(--muted); font-size: 0.9rem; }
+.mq-status:empty { display: none; }
+.mq-preview { border: 1px dashed var(--line); border-radius: 10px; padding: 10px 14px; margin-top: 10px; overflow-x: auto; }
+.mq-preview:empty { display: none; }
+.mq-qname { margin: 0 0 6px; color: var(--muted); font-size: 0.82rem; }
+.mq-qtext p { margin: 6px 0; line-height: 1.5; }
+.mq-qtext table { color: var(--ink); }
+.mq-qtext input { width: 2.4em; }
+.mq-options { margin: 6px 0; padding-left: 1.6em; list-style: lower-alpha; }
+.mq-options li { margin: 3px 0; }
+.mq-feedback { margin-top: 10px; }
+.mq-feedback summary { cursor: pointer; font-weight: 600; }
+.mq-feedback ul { margin: 6px 0; }
+.mq-how { margin: 0 0 10px; padding-left: 1.4em; line-height: 1.6; }
+@media (max-width: 600px) { .mq-items { flex-direction: column; } }

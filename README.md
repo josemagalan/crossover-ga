@@ -36,6 +36,7 @@ It runs entirely in the browser, with no build step and no server: open `index.h
 - **Learn more panel:** explanation of the method, pseudocode that highlights the line of the current step, Python and JavaScript implementations to copy or download (tested to give exactly the same children as the tool), and references with the original source of each operator.
 - **Practice mode (“predict the child”):** write your prediction of both children before watching the animation and check it gene by gene; whatever the algorithm draws internally (mask, draws, cycle order, ties) is revealed only when needed for the answer to be unique.
 - **Compare operators:** one screen per representation applies every crossover to the same parents (and, where possible, the same cuts), colours each child gene by what it keeps from the parents, and sums up over 1000 runs how much each operator preserves: position, circular relative order, adjacencies, copies of a parent and validity for permutations; genes from the own parent and stretches for binary; copies, values inside the parents’ interval and distance to the parents for real-valued.
+- **Question banks for Moodle (for teachers):** generates graded questions in Moodle XML — compute the offspring (cloze, one box per gene) for PMX, OX, CX and the binary crossovers, identify the operator, and spot the mistake in PMX and OX — in three difficulty levels, one category per operator, type and level, ready for Moodle’s random questions. Each question’s general feedback gives the solution and links to the step-by-step solution of that very exercise in the tool.
 - **Chromosomes as routes:** for permutation crossovers, each gene becomes a city and each chromosome a travelling-salesman route; the parents’ routes and each child’s route build up with the animation, with their lengths and the new stretches marked.
 
 ## Pedagogical purpose
@@ -56,7 +57,7 @@ Requires Node.js 22 or later; Python 3 is optional (it is used to test the downl
 npm test
 ```
 
-The tests check every operator (worked examples, thousands of random cases contrasted with an independent implementation), that the downloadable code gives the same children as the tool with the same random draws, that the pseudocode is linked to the animation steps, the comparison metrics and the city maps. They run on every push with GitHub Actions.
+The tests check every operator (worked examples, thousands of random cases contrasted with an independent implementation), that the downloadable code gives the same children as the tool with the same random draws, that the pseudocode is linked to the animation steps, the comparison metrics, the city maps and the Moodle question generator (stored answers match the operators, one correct option, well-formed XML, links that reproduce each exercise). They run on every push with GitHub Actions.
 
 ## Project structure
 
@@ -68,6 +69,7 @@ The tests check every operator (worked examples, thousands of random cases contr
 | `js/viz/` | D3 views that draw the trace, and the route maps |
 | `js/content/` | Teaching content of each operator: explanation, pseudocode, downloadable code and references |
 | `js/compare.js`, `js/compare-view.js` | “Compare operators”: metrics and screen |
+| `js/moodle.js`, `js/moodle-page.js` | Moodle question-bank generator (Moodle XML) and its page |
 | `js/learn.js`, `js/about.js`, `js/app.js` | “Learn more” panel, about page and footer, page controller |
 | `js/i18n.js`, `js/rng.js`, `js/cities.js` | Spanish and English texts; seeded random generator; random cities |
 | `img/logos/`, `vendor/` | Institution logos; D3.js v7 |

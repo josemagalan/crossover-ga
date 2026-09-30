@@ -27,6 +27,7 @@
         <p class="lead" data-i18n="homeLead"></p>
       </section>
       <div id="repGrid" class="rep-grid"></div>
+      <p class="home-extra"><a href="#page=moodle" id="moodleLink"><span data-i18n="moodleHomeLink">Para profesorado: bancos de preguntas para Moodle</span> <span aria-hidden="true">→</span></a></p>
     </main>
 
     <main id="opView" hidden>
@@ -243,6 +244,11 @@
       <article class="card about" id="aboutBody"></article>
     </main>
 
+    <main id="moodleView" hidden>
+      <a class="back" href="#" id="moodleBack"><span aria-hidden="true">←</span> <span data-i18n="allOperators">Todos los operadores</span></a>
+      <article class="card about moodle" id="moodleBody"></article>
+    </main>
+
     <footer class="site-foot" id="siteFoot"></footer>
   </div>
 
@@ -287,6 +293,8 @@
   <script src="js/compare.js"></script>
   <script src="js/compare-view.js"></script>
   <script src="js/about.js"></script>
+  <script src="js/moodle.js"></script>
+  <script src="js/moodle-page.js"></script>
   <script src="js/learn.js"></script>
   <script src="js/home.js"></script>
   <script src="js/app.js"></script>
