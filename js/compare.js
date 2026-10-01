@@ -11,12 +11,17 @@
  * example: métricas del ejemplo (media de sus dos hijos); mean: media de `reps`
  * repeticiones con los mismos padres y cortes y sorteos al azar (y los mismos parámetros),
  * o null si reps = 0.
+ *
+ * randomMean* (fase 10): la misma media, pero sobre muchas parejas de padres al azar
+ * de la misma longitud (ver randomMeanStart).
  */
 (function (root) {
   'use strict';
 
   const isNode = typeof module !== 'undefined' && module.exports;
   const R = isNode ? require('./rng.js') : root.GAX.rng;
+  const B = isNode ? require('./operators/bin-utils.js') : root.GAX.binUtils;
+  const U = isNode ? require('./operators/real-utils.js') : root.GAX.realUtils;
 
   const EPS = 1e-9;
 
@@ -323,9 +328,105 @@
     });
   }
 
+  // ---------- Media con padres al azar ----------
+
+  /** Padres al azar de cada representación (los mismos generadores que el botón «Padres aleatorios»). */
+  function randomParent(rep, rng, n) {
+    if (rep === 'permutation') return R.randomPermutation(rng, n);
+    if (rep === 'binary') return B.randomBits(rng, n);
+    return U.randomReals(rng, n);
+  }
+
+  /** Pareja de padres distintos, sacada solo de `rng`. */
+  function randomPair(rep, rng, n) {
+    const p1 = randomParent(rep, rng, n);
+    let p2 = randomParent(rep, rng, n);
+    while (p2.join() === p1.join()) p2 = randomParent(rep, rng, n);
+    return [p1, p2];
+  }
+
+  // Semilla de cada pareja (y de cada operador dentro de ella): el resultado no depende
+  // de cómo se reparta el cálculo en tandas.
+  const mixSeed = (a, b, c) => ((Math.imul(a, 2654435761) ^ Math.imul(b + 1, 2246822519) ^ Math.imul(c + 1, 3266489917)) >>> 0) || 1;
+
+  /** Ajustes (variante y parámetros) de cada operador, como en compare(). */
+  function opSettings(opts) {
+    return opts.ops.map(({ id, spec }) => {
+      const isFrom = id === opts.from;
+      const params = defaultParams(spec, isFrom ? opts.params : null);
+      const variant = spec.variants
+        ? (isFrom && spec.variants.indexOf(opts.variant) !== -1 ? opts.variant : spec.defaultVariant)
+        : null;
+      return { id, spec, params, variant };
+    });
+  }
+
+  /**
+   * Media sobre parejas de padres al azar, por tandas (para no bloquear la página):
+   *   const acc = randomMeanStart(opts);  randomMeanStep(acc, k);  ...  randomMeanResult(acc)
+   * opts: { rep, ops, n, from, variant, params, pairs, reps, seed }
+   *   pairs parejas de longitud n; con cada una, reps cruces por operador con cortes y sorteos
+   *   al azar. Todos los operadores se cruzan con las mismas parejas.
+   * El resultado solo depende de rep, n, los ajustes de los operadores, pairs, reps y seed
+   * (no de los padres que se estén viendo).
+   */
+  function randomMeanStart(opts) {
+    const settings = opSettings(opts);
+    const metrics = METRICS[opts.rep];
+    return {
+      opts, settings, metrics,
+      pairs: opts.pairs == null ? 1000 : opts.pairs,
+      reps: opts.reps == null ? 10 : opts.reps,
+      seed: opts.seed == null ? 1 : opts.seed,
+      done: 0,
+      sums: settings.map(() => Object.fromEntries(metrics.map((m) => [m.id, 0]))),
+    };
+  }
+
+  /** Procesa hasta `count` parejas más. Devuelve la fracción hecha (0–1). */
+  function randomMeanStep(acc, count) {
+    const { opts, settings, metrics } = acc;
+    const n = opts.n;
+    const end = Math.min(acc.pairs, acc.done + count);
+    for (let k = acc.done; k < end; k++) {
+      const [p1, p2] = randomPair(opts.rep, R.mulberry32(mixSeed(acc.seed, k, -1)), n);
+      settings.forEach((s, idx) => {
+        const rng = R.mulberry32(mixSeed(acc.seed, k, idx));
+        for (let t = 0; t < acc.reps; t++) {
+          const rc = deriveCuts(s.spec, [], n, rng, s.params.k).cuts;
+          const r = s.spec.run(p1, p2, rc, { variant: s.variant, seed: 1 + Math.floor(rng() * 999999), params: s.params });
+          const m = pairMetrics(opts.rep, r.children, p1, p2);
+          metrics.forEach((mm) => { acc.sums[idx][mm.id] += m[mm.id]; });
+        }
+      });
+    }
+    acc.done = end;
+    return acc.pairs ? acc.done / acc.pairs : 1;
+  }
+
+  /** { [id]: { métrica: media } } cuando ha terminado; null si aún no. */
+  function randomMeanResult(acc) {
+    if (acc.done < acc.pairs) return null;
+    const total = acc.pairs * acc.reps;
+    const out = {};
+    acc.settings.forEach((s, idx) => {
+      out[s.id] = {};
+      acc.metrics.forEach((m) => { out[s.id][m.id] = total ? acc.sums[idx][m.id] / total : 0; });
+    });
+    return out;
+  }
+
+  /** Todo de una vez (tests y scripts). */
+  function randomMean(opts) {
+    const acc = randomMeanStart(opts);
+    randomMeanStep(acc, acc.pairs);
+    return randomMeanResult(acc);
+  }
+
   const api = {
     METRICS, compare, deriveCuts, interiorCuts, defaultParams,
     permMetrics, binMetrics, realMetrics, pairMetrics, geneClasses,
+    randomPair, randomMean, randomMeanStart, randomMeanStep, randomMeanResult,
   };
   if (isNode) module.exports = api;
   else (root.GAX = root.GAX || {}).compare = api;

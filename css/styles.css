@@ -763,6 +763,9 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; text
 .cmp-op-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin-bottom: 8px; }
 .cmp-op-name { font-weight: 700; color: var(--ink); }
 .cmp-op-meta { font-size: 0.86rem; color: var(--muted); }
+.cmp-mode { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.cmp-mode-label { font-size: 0.9rem; font-weight: 600; color: var(--muted); }
+.cmp-progress { font-size: 0.86rem; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; min-width: 3.5em; }
 .table-scroll { overflow-x: auto; margin-top: 12px; }
 .cmp-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
 .cmp-table th, .cmp-table td { padding: 10px 10px; text-align: left; vertical-align: middle; border-bottom: 1px solid var(--line); }

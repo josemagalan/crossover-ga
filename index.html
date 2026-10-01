@@ -230,7 +230,17 @@
       </section>
 
       <section class="card" aria-labelledby="cmp-table-title">
-        <h2 id="cmp-table-title" class="learn-title" data-i18n="compareTableTitle">Qué conserva cada operador</h2>
+        <div class="cmp-section-head">
+          <h2 id="cmp-table-title" class="learn-title" data-i18n="compareTableTitle">Qué conserva cada operador</h2>
+          <div class="cmp-mode">
+            <span class="cmp-mode-label" id="cmpAvgLabel" data-i18n="compareAvgLabel">Media con</span>
+            <div class="seg" role="group" aria-labelledby="cmpAvgLabel" id="cmpAvg">
+              <button type="button" data-avg="same" aria-pressed="true" data-i18n="compareAvgSame">estos padres</button>
+              <button type="button" data-avg="rand" aria-pressed="false" data-i18n="compareAvgRand">padres al azar</button>
+            </div>
+            <span class="cmp-progress" id="cmpProgress" aria-live="polite"></span>
+          </div>
+        </div>
         <p class="hint" id="cmpTableNote"></p>
         <div class="table-scroll"><table id="cmpTable" class="cmp-table"></table></div>
         <h3 class="cmp-defs-title" data-i18n="compareDefsTitle">Qué mide cada columna</h3>

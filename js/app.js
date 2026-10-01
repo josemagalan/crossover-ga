@@ -33,7 +33,7 @@
     practiceErr: $('practiceErr'), practiceResult: $('practiceResult'), btnPracticeExit: $('btnPracticeExit'),
     btnCompare: $('btnCompare'), btnRoutes: $('btnRoutes'), routeCard: $('routeCard'), routeLegend: $('routeLegend'),
     cmpView: $('cmpView'), cmpBack: $('cmpBack'), cmpBackText: $('cmpBackText'), cmpEyebrow: $('cmpEyebrow'),
-    cmpRandom: $('cmpRandom'), cmpDraw: $('cmpDraw'),
+    cmpRandom: $('cmpRandom'), cmpDraw: $('cmpDraw'), cmpAvg: $('cmpAvg'), cmpProgress: $('cmpProgress'),
     aboutView: $('aboutView'), aboutBody: $('aboutBody'), siteFoot: $('siteFoot'),
     moodleView: $('moodleView'), moodleBody: $('moodleBody'),
   };
@@ -54,6 +54,11 @@
   };
   const CMP_REPS = 1000;   // repeticiones para las medias de la comparación
   let cmpToken = 0;
+  // Media con padres al azar (fase 10): parejas, cruces por pareja, semilla fija y tamaño de cada tanda.
+  const CMP_RAND = { pairs: 1000, reps: 10, seed: 1, chunk: 20 };
+  const randCache = new Map();   // clave de ajustes → medias ya calculadas
+  let randToken = 0;
+  let randJob = null;             // cálculo en curso: { key, token, done }
   let timer = null;
   let learn = null;
 
@@ -503,13 +508,75 @@
     const token = ++cmpToken;
     const c = state.cmp;
     c.rows = G.compare.compare(compareOpts(0));
-    cmpView.render({ rep: c.rep, n: state.n, p1: state.p1, p2: state.p2, rows: c.rows, reps: CMP_REPS, from: c.from });
+    cmpView.render(cmpModel());
+    syncAvg();
     writeHash();
     setTimeout(() => {
       if (token !== cmpToken || state.view !== 'cmp') return;
       c.rows = G.compare.compare(compareOpts(CMP_REPS));
-      cmpView.setRows(c.rows);
+      cmpView.setTable(cmpModel());
+      if (c.avg === 'rand') ensureRandMean();
     }, 30);
+  }
+
+  // Modelo para la vista: en el modo «padres al azar», la media mostrada es la de muchas parejas.
+  function cmpModel() {
+    const c = state.cmp;
+    const rand = c.avg === 'rand' ? randCache.get(randKey()) || null : null;
+    const rows = (c.rows || []).map((r) => (c.avg === 'rand' ? Object.assign({}, r, { mean: rand ? rand[r.id] : null }) : r));
+    return {
+      rep: c.rep, n: state.n, p1: state.p1, p2: state.p2, rows, reps: CMP_REPS, from: c.from,
+      mode: c.avg, pairs: CMP_RAND.pairs, randReps: CMP_RAND.reps,
+    };
+  }
+
+  // La media con padres al azar solo depende de la representación, la longitud y los ajustes.
+  function randKey() {
+    const c = state.cmp;
+    return JSON.stringify([c.rep, state.n, c.from, c.variant, c.params]);
+  }
+
+  // Calcula (por tandas, sin bloquear la página) la media con padres al azar, si no está ya.
+  function ensureRandMean() {
+    const key = randKey();
+    if (randCache.has(key)) { el.cmpProgress.textContent = ''; return; }
+    if (randJob && randJob.key === key) return;   // ya se está calculando
+    const token = ++randToken;
+    randJob = { key, token, done: 0 };
+    const c = state.cmp;
+    const acc = G.compare.randomMeanStart({
+      rep: c.rep, ops: cmpOps(c.rep), n: state.n, from: c.from, variant: c.variant, params: c.params,
+      pairs: CMP_RAND.pairs, reps: CMP_RAND.reps, seed: CMP_RAND.seed,
+    });
+    const tick = () => {
+      if (token !== randToken || state.view !== 'cmp' || randKey() !== key) {
+        if (randJob && randJob.token === token) randJob = null;
+        return;
+      }
+      const done = G.compare.randomMeanStep(acc, CMP_RAND.chunk);
+      randJob.done = done;
+      if (done < 1) {
+        showRandProgress();
+        setTimeout(tick, 0);
+        return;
+      }
+      randCache.set(key, G.compare.randomMeanResult(acc));
+      randJob = null;
+      el.cmpProgress.textContent = '';
+      if (state.cmp.avg === 'rand') cmpView.setTable(cmpModel());
+    };
+    showRandProgress();
+    setTimeout(tick, 0);
+  }
+
+  function showRandProgress() {
+    const busy = randJob && state.cmp && state.cmp.avg === 'rand' && randJob.key === randKey();
+    el.cmpProgress.textContent = busy ? t('compareProgress', { p: Math.floor(100 * randJob.done) }) : '';
+  }
+
+  function syncAvg() {
+    el.cmpAvg.querySelectorAll('button[data-avg]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.avg === state.cmp.avg)));
+    showRandProgress();
   }
 
   function renderCompareHeader() {
@@ -543,7 +610,7 @@
     const r = parseInt(q.get('r'), 10);
     state.draw = Number.isFinite(r) && r > 0 ? r % 1000000 : R.newSeed() + 1;
     state.view = 'cmp';
-    state.cmp = { rep: repIdParam, from, variant, params, cuts: [], rows: null };
+    state.cmp = { rep: repIdParam, from, variant, params, cuts: [], rows: null, avg: q.get('avg') === 'rand' ? 'rand' : 'same' };
 
     const seed = parseInt(q.get('s'), 10);
     const p1 = (q.get('p1') || '').split('-').filter(Boolean).map(Number);
@@ -754,7 +821,8 @@
       renderRoutes();
     } else if (state.view === 'cmp') {
       renderCompareHeader();
-      cmpView.render({ rep: state.cmp.rep, n: state.n, p1: state.p1, p2: state.p2, rows: state.cmp.rows, reps: CMP_REPS, from: state.cmp.from });
+      cmpView.render(cmpModel());
+      showRandProgress();
     }
     writeHash();
   }
@@ -884,6 +952,7 @@
       Object.assign(params, {
         cmp: c.rep,
         from: c.from || undefined,
+        avg: c.avg === 'rand' ? 'rand' : undefined,
         v: c.variant || undefined,
         r: String(state.draw),
         p1: state.p1.join('-'),
@@ -894,7 +963,7 @@
       paramIds = Object.keys(c.params);
       paramIds.forEach((k) => { params[k] = String(c.params[k]); });
     }
-    const order = ['page', 'op', 'cmp', 'lang', 'from', 'v', 'r'].concat(paramIds, ['p1', 'p2', 'c', 's', 'm', 'step']).filter((k) => params[k] != null && params[k] !== '');
+    const order = ['page', 'op', 'cmp', 'lang', 'from', 'avg', 'v', 'r'].concat(paramIds, ['p1', 'p2', 'c', 's', 'm', 'step']).filter((k) => params[k] != null && params[k] !== '');
     const h = new URLSearchParams(order.map((k) => [k, params[k]])).toString();
     if (location.hash.replace(/^#/, '') === h) return;
     try { history.replaceState(null, '', `#${h}`); } catch (err) { /* file:// en algunos navegadores */ }
@@ -975,6 +1044,15 @@
     cmpParents(R.newSeed(), state.n);
     recomputeCompare();
     renderCompareHeader();
+  });
+  el.cmpAvg.addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-avg]');
+    if (!b || b.dataset.avg === state.cmp.avg) return;
+    state.cmp.avg = b.dataset.avg;
+    syncAvg();
+    cmpView.setTable(cmpModel());
+    if (state.cmp.avg === 'rand') ensureRandMean();
+    writeHash();
   });
   el.cmpDraw.addEventListener('click', () => {
     state.draw = R.newSeed() + 1;

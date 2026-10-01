@@ -98,7 +98,9 @@
 
     function renderTable() {
       const ms = metrics[model.rep];
-      el.tableNote.textContent = t('compareTableNote', { n: model.reps });
+      el.tableNote.textContent = model.mode === 'rand'
+        ? t('compareTableNoteRand', { pairs: model.pairs, reps: model.randReps, n: model.n })
+        : t('compareTableNote', { n: model.reps });
 
       const thead = node('thead');
       const hr = node('tr');
@@ -158,6 +160,11 @@
       /** Rellena las medias cuando terminan de calcularse (sin redibujar los hijos). */
       setRows(rows) {
         model.rows = rows;
+        renderTable();
+      },
+      /** Redibuja solo la tabla con otro modelo (medias o modo de la media). */
+      setTable(m) {
+        model = Object.assign({}, model, m);
         renderTable();
       },
     };

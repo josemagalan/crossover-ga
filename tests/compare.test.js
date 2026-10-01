@@ -160,3 +160,54 @@ test('comparar: CX sin mezcla aparece como copia de un padre', () => {
   assert.equal(cx.mean.clone, 1);
   assert.equal(cx.example.clone, 1);
 });
+
+// ---------- Media con padres al azar (fase 10) ----------
+
+test('padres al azar: reproducible y sin depender de cómo se reparta en tandas', () => {
+  const opts = { rep: 'permutation', ops: opsOf('permutation'), n: 8, pairs: 40, reps: 3, seed: 5 };
+  const a = C.randomMean(opts);
+  assert.deepEqual(C.randomMean(opts), a);
+  const acc = C.randomMeanStart(opts);
+  assert.equal(C.randomMeanResult(acc), null);
+  let done = 0;
+  while (done < 1) done = C.randomMeanStep(acc, 7);
+  assert.deepEqual(C.randomMeanResult(acc), a);
+  // Otra semilla, otras parejas
+  assert.notDeepEqual(C.randomMean(Object.assign({}, opts, { seed: 6 })), a);
+});
+
+test('padres al azar: parejas distintas y válidas en las tres representaciones', () => {
+  const rng = R.mulberry32(3);
+  for (const rep of ['permutation', 'binary', 'real']) {
+    for (let i = 0; i < 50; i++) {
+      const [p1, p2] = C.randomPair(rep, rng, 6);
+      assert.equal(p1.length, 6);
+      assert.notDeepEqual(p1, p2);
+      if (rep === 'permutation') assert.deepEqual(p1.slice().sort((a, b) => a - b), [1, 2, 3, 4, 5, 6]);
+      if (rep === 'binary') assert.ok(p1.every((g) => g === 0 || g === 1));
+    }
+  }
+});
+
+test('padres al azar: permutación con lo esperado de cada operador', () => {
+  const m = C.randomMean({ rep: 'permutation', ops: opsOf('permutation'), n: 8, pairs: 60, reps: 4, seed: 1 });
+  assert.equal(m.cx.position, 1);
+  ['pmx', 'ox', 'cx', 'erx'].forEach((id) => assert.equal(m[id].valid, 1));
+  assert.ok(m['one-point-perm'].valid < 0.3);
+  assert.equal(m['one-point-perm'].position, 1);
+  assert.ok(m.erx.adjacency > m.pmx.adjacency);
+  assert.ok(m.ox.order > m.pmx.order);
+  assert.ok(m.pmx.position > m.ox.position);
+  assert.ok(m.cx.clone > 0.3);   // con n = 8 muchos hijos de CX son copias de un padre
+});
+
+test('padres al azar: binaria y real, y respeta los ajustes del operador de origen', () => {
+  const b = C.randomMean({ rep: 'binary', ops: opsOf('binary'), n: 8, pairs: 30, reps: 3, seed: 2 });
+  Object.values(b).forEach((x) => { assert.ok(x.own >= 0 && x.own <= 1); assert.ok(x.segments >= 1); });
+  const r = C.randomMean({ rep: 'real', ops: opsOf('real'), n: 6, pairs: 30, reps: 3, seed: 2 });
+  assert.equal(r['uniform-real'].copied, 1);
+  assert.equal(r.arithmetic.inside, 1);
+  assert.ok(r.blx.inside < 1);
+  const r0 = C.randomMean({ rep: 'real', ops: opsOf('real'), n: 6, pairs: 30, reps: 3, seed: 2, from: 'blx', params: { alpha: 0 } });
+  assert.equal(r0.blx.inside, 1);   // con α = 0, BLX solo muestrea entre los padres
+});
