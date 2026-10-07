@@ -165,7 +165,7 @@ for (const op of readyOps) {
       const demo = spawnSync(PY, [pyFile], { cwd: dir, encoding: 'utf8' });
       assert.equal(demo.status, 0, demo.stderr);
       const promised = [...src.matchAll(/print\(h[12]\)\s+#\s*(\[.*\])/g)].map((m) => m[1]);
-      assert.deepEqual(demo.stdout.trim().split('\n').slice(0, promised.length), promised);
+      assert.deepEqual(demo.stdout.trim().split(/\r?\n/).slice(0, promised.length), promised);
     });
   }
 
