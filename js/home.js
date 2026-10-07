@@ -52,6 +52,11 @@
         rep.operators.forEach((op) => list.append(opItem(op, l)));
 
         card.append(head, chromo, node('p', 'rep-desc', rep.desc[l]), list);
+        if (rep.note) {
+          const note = node('p', 'rep-note');
+          note.append(node('strong', null, rep.note[l].label), document.createTextNode(` ${rep.note[l].text}`));
+          card.append(note);
+        }
         if (rep.operators.filter((op) => op.ready).length > 1) {
           const cmp = node('a', 'cmp-link');
           cmp.href = `#cmp=${rep.id}&lang=${l}`;

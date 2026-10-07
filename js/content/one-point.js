@@ -11,12 +11,14 @@
       'El cruce en un punto es el operador de cruce clásico de los algoritmos genéticos, el que analiza Holland (1975). Se elige un punto de corte y los dos hijos intercambian las colas: el Hijo 1 se queda con la cabeza del Padre 1 y la cola del Padre 2, y el Hijo 2, al revés.',
       'Syswerda (1989) propuso describirlo con una máscara de cruce: un bit por posición, 0 si cada hijo copia el gen de su propio padre y 1 si los hijos lo intercambian. En el cruce en un punto la máscara es un bloque de ceros seguido de un bloque de unos. La misma idea sirve para los cruces en dos puntos, en n puntos y uniforme; solo cambia la forma de la máscara.',
       'Como los genes contiguos tienden a viajar juntos, este cruce conserva bien los grupos de genes próximos. En la teoría de esquemas de Holland, un esquema sobrevive al cruce con más facilidad cuanto más corta es su longitud de definición, es decir, cuanto más cerca están sus posiciones fijas. La contrapartida es un sesgo posicional: el primer gen y el último siempre proceden de padres distintos.',
+      C.integerNote.es,
       'Coste: cada hijo se construye con un solo recorrido, en tiempo O(n).',
     ],
     en: [
       'One-point crossover is the classic crossover operator of genetic algorithms, the one analysed by Holland (1975). A cut point is chosen and the two children swap tails: Child 1 keeps Parent 1’s head and Parent 2’s tail, and Child 2 the other way round.',
       'Syswerda (1989) proposed describing it with a crossover mask: one bit per position, 0 if each child copies its own parent’s gene and 1 if the children swap it. In one-point crossover the mask is a block of zeros followed by a block of ones. The same idea covers two-point, n-point and uniform crossover; only the shape of the mask changes.',
       'Because neighbouring genes tend to travel together, this crossover preserves groups of nearby genes well. In Holland’s schema theory, a schema survives crossover more easily the shorter its defining length, that is, the closer together its fixed positions are. The downside is a positional bias: the first and last genes always come from different parents.',
+      C.integerNote.en,
       'Cost: each child is built in a single pass, in O(n) time.',
     ],
   };
@@ -141,6 +143,7 @@ if (typeof module !== 'undefined' && module.exports) {
       es: 'Presenta el algoritmo del cruce en un punto que usan las transparencias del curso.',
       en: 'Presents the one-point crossover algorithm used in the course slides.',
     }),
+    C.ref('eiben', C.eibenNote),
     C.ref('talbi', {
       es: 'Manual de metaheurísticas. Su apartado 3.3.2.2 (pp. 213–215) repasa las propiedades deseables de un cruce (heredabilidad, respeto, validez) y presenta el cruce en un punto y el efecto de disrupción que produce en los extremos del cromosoma.',
       en: 'Metaheuristics textbook. Section 3.3.2.2 (pp. 213–215) reviews the desirable properties of a crossover (heritability, respect, validity) and presents one-point crossover and the disruption it causes at the ends of the chromosome.',

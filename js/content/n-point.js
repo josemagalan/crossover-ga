@@ -11,12 +11,14 @@
       'El cruce en n puntos generaliza los anteriores: con k cortes, el cromosoma queda dividido en k + 1 tramos, y cada hijo toma los tramos alternativamente de su propio padre y del otro. Con k = 1 es el cruce en un punto y con k = 2, el de dos puntos.',
       'En la máscara de cruce, el bit cambia de valor en cada corte. Cuantos más cortes, más se mezclan los padres y más se rompen los grupos de genes contiguos. En el extremo, con un corte entre cada dos genes (k = n − 1), la máscara alterna 0 y 1 en todas las posiciones.',
       'Cambia el número de cortes con el control «Número de cortes» y arrastra cada corte para ver cómo cambia la máscara.',
+      C.integerNote.es,
       'Coste: cada hijo se construye con un solo recorrido, en tiempo O(n).',
     ],
     en: [
       'N-point crossover generalises the previous ones: with k cuts, the chromosome is divided into k + 1 stretches, and each child takes the stretches alternately from its own parent and from the other. With k = 1 it is one-point crossover and with k = 2, two-point crossover.',
       'In the crossover mask, the bit changes value at every cut. The more cuts, the more the parents are mixed and the more groups of neighbouring genes are broken. At the extreme, with a cut between every two genes (k = n − 1), the mask alternates 0 and 1 at every position.',
       'Change the number of cuts with the “Number of cuts” control and drag each cut to see how the mask changes.',
+      C.integerNote.en,
       'Cost: each child is built in a single pass, in O(n) time.',
     ],
   };
@@ -153,10 +155,7 @@ if (typeof module !== 'undefined' && module.exports) {
       es: 'Con las máscaras de cruce, los cruces por cortes se reducen a máscaras con tramos de unos y ceros.',
       en: 'With crossover masks, cut-based crossovers become masks made of stretches of ones and zeros.',
     }),
-    C.ref('eiben', {
-      es: 'Manual de referencia de computación evolutiva, con los operadores de cruce para representación binaria.',
-      en: 'Reference textbook on evolutionary computation, including crossover operators for binary representations.',
-    }),
+    C.ref('eiben', C.eibenNote),
     C.ref('mitchell', {
       es: 'Introducción clásica a los algoritmos genéticos; menciona las versiones de cruce en varios puntos.',
       en: 'Classic introduction to genetic algorithms; mentions multi-point versions of crossover.',

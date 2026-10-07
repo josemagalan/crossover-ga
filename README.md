@@ -19,8 +19,8 @@ All authors are members of the Los Goonies research group (Group of Organization
 ## Overview
 
 Crossover is how a genetic algorithm combines the information of two parents to create children, and how it has to be done depends on how each solution is represented: an operator designed for bit strings can produce invalid solutions when the chromosome is a permutation. This interactive tool shows, step by step and in Spanish or English, how the classic crossover operators work for binary, real-valued and permutation representations, and lets students practise predicting the children and compare what each operator preserves from the parents.
-It is the sister tool of [Mutation in genetic algorithms](https://github.com/josemagalan/mutation-ga), with the same approach and features.
-It runs entirely in the browser, with no build step and no server: open `index.html` or use the [live demo](https://josemagalan.github.io/crossover-ga/).
+
+It is the sister tool of [Mutation in genetic algorithms](https://github.com/josemagalan/mutation-ga), with the same approach and features. It runs entirely in the browser, with no build step and no server: open `index.html` or use the [live demo](https://josemagalan.github.io/crossover-ga/).
 
 ## Implemented operators
 
@@ -29,6 +29,8 @@ It runs entirely in the browser, with no build step and no server: open `index.h
 | Binary | One-point, two-point, n-point (k cuts) and uniform (probability p), all explained through Syswerda’s crossover mask |
 | Real-valued | Uniform, arithmetic (weight λ), BLX-α (α) and SBX (η); BLX-α and SBX with an extra 2D view of the parents, a cloud of other possible children and the children of the trace |
 | Permutation | PMX, OX (three variants), CX (three variants) and ERX (two variants, with its adjacency table), plus a counterexample showing why one-point crossover fails on permutations |
+
+There is no separate integer section: integer vectors use the binary crossovers unchanged (one-point, two-point, n-point and uniform), because these only cut and recombine positions without looking at the gene values (Eiben & Smith, *Introduction to Evolutionary Computing*). Integer-specific operators are needed for mutation, which the sister tool covers.
 
 ## Features
 

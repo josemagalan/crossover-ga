@@ -34,6 +34,18 @@
     },
   };
 
+  // Párrafo común de la explicación: los cruces binarios valen también para la representación entera.
+  const integerNote = {
+    es: 'Representación entera: estos mismos cruces (un punto, dos puntos, n puntos y uniforme) se usan sin cambios cuando cada gen es un entero, porque solo cortan y recombinan posiciones, sin mirar qué valor hay en cada una; así lo recogen Eiben y Smith (2015). Con la mutación no ocurre lo mismo: invertir un bit no tiene sentido en un entero, y por eso hay mutaciones propias para enteros, que se ven en la herramienta hermana, «Mutación en algoritmos genéticos».',
+    en: 'Integer representation: these same crossovers (one-point, two-point, n-point and uniform) are used unchanged when each gene is an integer, because they only cut and recombine positions, without looking at the value in each one; Eiben and Smith (2015) say so too. Mutation is different: flipping a bit makes no sense for an integer, so integers have mutations of their own, shown in the sister tool, “Mutation in genetic algorithms”.',
+  };
+
+  // Nota de Eiben y Smith en las referencias de los cruces binarios
+  const eibenNote = {
+    es: 'Manual de referencia de computación evolutiva, con los operadores de cruce para representación binaria; indica que para la representación entera se usan los mismos.',
+    en: 'Reference textbook on evolutionary computation, including crossover operators for binary representations; it notes that the same ones are used for integer representations.',
+  };
+
   // Pasos de los cruces por cortes -> líneas del pseudocódigo
   const cutsStepLines = {
     intro: ['sig'],
@@ -139,7 +151,7 @@
     };
   }
 
-  const api = { narration, cutsStepLines, ref, refs, makeHelpers };
+  const api = { narration, integerNote, eibenNote, cutsStepLines, ref, refs, makeHelpers };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else ((root.GAX = root.GAX || {}).contentShared = root.GAX.contentShared || {}).binary = api;
 })(typeof self !== 'undefined' ? self : this);

@@ -16,6 +16,11 @@
         en: 'Each gene is a bit (0 or 1). It is the classic genetic algorithm encoding: integers and reals are encoded as bit strings.',
       },
       sample: ['1', '0', '1', '1', '0', '0', '1', '0'],
+      // Los cruces binarios valen tal cual para la representación entera (no tiene sección propia).
+      note: {
+        es: { label: 'Representación entera:', text: 'se usan estos mismos cruces, porque solo intercambian posiciones, sin mirar el valor de cada gen.' },
+        en: { label: 'Integer representation:', text: 'the same crossovers are used, because they only swap positions, without looking at the value of each gene.' },
+      },
       operators: [
         {
           id: 'one-point',

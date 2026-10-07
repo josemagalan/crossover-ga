@@ -5,6 +5,7 @@
   'use strict';
 
   const REPO = 'https://github.com/josemagalan/crossover-ga';
+  const SISTER = 'https://josemagalan.github.io/mutation-ga/';
 
   const authors = [
     { name: 'José Manuel Galán', aff: [1] },
@@ -33,6 +34,9 @@
       lead: 'Herramienta docente interactiva para ver paso a paso los operadores de cruce de los algoritmos genéticos, clasificados por el tipo de representación (binaria, real y permutacional), con su explicación, pseudocódigo, código descargable y referencias.',
       authorsTitle: 'Autores',
       group: 'Todos los autores forman parte del grupo de investigación Los Goonies (Group of Organization and Industrial Engineering and Simulation).',
+      sisterTitle: 'Herramienta hermana',
+      sister: 'Esta herramienta acompaña a «Mutación en algoritmos genéticos», de los mismos autores, que muestra con el mismo enfoque los operadores de mutación de cada representación (binaria, entera, real y permutacional).',
+      sisterLink: 'Abrir «Mutación en algoritmos genéticos»',
       citeTitle: 'Cómo citar',
       cite: 'Estamos preparando un artículo sobre esta herramienta para el Congreso de Ingeniería de Organización. Mientras tanto, si quieres citarla, ponte en contacto con los autores.',
       codeTitle: 'Código y licencias',
@@ -42,6 +46,7 @@
       thanks: 'Agradecemos al programa Claude for Science de Anthropic su apoyo al desarrollo de esta herramienta, que se ha realizado con la ayuda de Claude.',
       foot: 'Acerca de',
       footMoodle: 'Preguntas para Moodle',
+      footSister: 'Herramienta hermana: mutación',
       footLicence: 'Código MIT · Textos CC BY 4.0',
     },
     en: {
@@ -49,6 +54,9 @@
       lead: 'Interactive teaching tool to follow, step by step, the crossover operators of genetic algorithms, grouped by representation type (binary, real-valued and permutation), with explanations, pseudocode, downloadable code and references.',
       authorsTitle: 'Authors',
       group: 'All authors are members of the Los Goonies research group (Group of Organization and Industrial Engineering and Simulation).',
+      sisterTitle: 'Sister tool',
+      sister: 'This tool accompanies “Mutation in genetic algorithms”, by the same authors, which shows the mutation operators for each representation (binary, integer, real-valued and permutation) with the same approach.',
+      sisterLink: 'Open “Mutation in genetic algorithms”',
       citeTitle: 'How to cite',
       cite: 'We are preparing a paper on this tool for the Congreso de Ingeniería de Organización (Spanish conference on industrial management and engineering). In the meantime, if you would like to cite it, please contact the authors.',
       codeTitle: 'Code and licences',
@@ -58,6 +66,7 @@
       thanks: 'We thank Anthropic’s Claude for Science programme for supporting the development of this tool, which was built with the help of Claude.',
       foot: 'About',
       footMoodle: 'Moodle questions',
+      footSister: 'Sister tool: mutation',
       footLicence: 'Code MIT · Texts CC BY 4.0',
     },
   };
@@ -122,11 +131,22 @@
       node('p', 'lead', T.lead),
       section(T.authorsTitle, authorLine(true), affs, node('p', null, T.group)),
       logoRow('about-logos'),
+      section(T.sisterTitle, (() => {
+        const p = node('p', null, `${T.sister} `);
+        const s = node('a', null, T.sisterLink);
+        s.href = sisterUrl(lang);
+        s.target = '_blank';
+        s.rel = 'noopener';
+        p.append(s, document.createTextNode('.'));
+        return p;
+      })()),
       section(T.citeTitle, node('p', null, T.cite)),
       section(T.codeTitle, codeP),
       section(T.thanksTitle, node('p', null, T.thanks)),
     );
   }
+
+  function sisterUrl(lang) { return `${SISTER}#lang=${lang}`; }
 
   function renderFooter(container, lang) {
     const T = text[lang] || text.es;
@@ -139,11 +159,13 @@
     gh.href = REPO;
     const moodle = node('a', null, T.footMoodle);
     moodle.href = `#page=moodle&lang=${lang}`;
-    links.append(about, document.createTextNode(' · '), moodle, document.createTextNode(' · '), gh, document.createTextNode(` · ${T.footLicence}`));
+    const sister = node('a', null, T.footSister);
+    sister.href = sisterUrl(lang);
+    links.append(about, document.createTextNode(' · '), moodle, document.createTextNode(' · '), sister, document.createTextNode(' · '), gh, document.createTextNode(` · ${T.footLicence}`));
     info.append(links);
     container.replaceChildren(logoRow('site-foot-logos'), info);
   }
 
-  const api = { renderAbout, renderFooter, authors, affiliations, text };
+  const api = { renderAbout, renderFooter, sisterUrl, authors, affiliations, text };
   (root.GAX = root.GAX || {}).about = api;
 })(typeof self !== 'undefined' ? self : this);

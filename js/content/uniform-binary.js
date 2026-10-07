@@ -11,12 +11,14 @@
       'En el cruce uniforme no hay cortes: cada posición se decide por separado. Para cada gen se sortea un número aleatorio y, si no supera la probabilidad p, los hijos intercambian ese gen. La idea aparece en Ackley (1987), y Syswerda (1989) la presentó con la máscara de cruce y la comparó con los cruces de uno y dos puntos, frente a los que resultó mejor en la mayoría de sus pruebas.',
       'Con p = 0,5, la versión original, cada bit de la máscara vale 1 con probabilidad 0,5. Con valores menores (cruce uniforme parametrizado) se intercambian menos genes y los hijos se parecen más a sus padres. No tiene sentido usar p > 0,5: equivaldría a usar 1 − p y cambiar los nombres de los hijos.',
       'A diferencia de los cruces por cortes, el uniforme no depende de la posición: dos genes lejanos tienen la misma probabilidad de viajar juntos que dos contiguos. Por eso mezcla mucho más a los padres, pero también rompe con facilidad los grupos de genes que conviene mantener unidos.',
+      C.integerNote.es,
       'Coste: un número aleatorio por gen, en tiempo O(n).',
     ],
     en: [
       'Uniform crossover has no cut points: each position is decided separately. For each gene a random number is drawn and, if it does not exceed the probability p, the children swap that gene. The idea appears in Ackley (1987), and Syswerda (1989) presented it with the crossover mask and compared it with one- and two-point crossover, outperforming them in most of his tests.',
       'With p = 0.5, the original version, each mask bit is 1 with probability 0.5. With smaller values (parameterised uniform crossover) fewer genes are swapped and the children resemble their parents more. Using p > 0.5 makes no sense: it would be equivalent to using 1 − p and swapping the children’s names.',
       'Unlike cut-based crossovers, uniform crossover does not depend on position: two distant genes are as likely to travel together as two neighbouring ones. It therefore mixes the parents much more, but it also easily breaks groups of genes that should stay together.',
+      C.integerNote.en,
       'Cost: one random number per gene, in O(n) time.',
     ],
   };
@@ -172,6 +174,7 @@ if (typeof module !== 'undefined' && module.exports) {
       es: 'Introducción clásica a los algoritmos genéticos, con ejemplos de uso del cruce uniforme.',
       en: 'Classic introduction to genetic algorithms, with examples using uniform crossover.',
     }),
+    C.ref('eiben', C.eibenNote),
     C.ref('talbi', {
       es: 'Manual de metaheurísticas. El apartado 3.3.2.2 (pp. 214–215, fig. 3.17) presenta el cruce uniforme: cada gen se toma al azar de uno de los padres, sin depender del tamaño de los segmentos.',
       en: 'Metaheuristics textbook. Section 3.3.2.2 (pp. 214–215, fig. 3.17) presents uniform crossover: each gene is taken at random from one of the parents, regardless of segment size.',

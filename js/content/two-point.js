@@ -11,12 +11,14 @@
       'El cruce en dos puntos elige dos cortes y los hijos intercambian el tramo que queda entre ellos: cada hijo conserva los extremos de su padre y recibe el centro del otro. Su máscara de cruce es un bloque de unos rodeado de ceros.',
       'Corrige el principal sesgo del cruce en un punto. Si se imagina el cromosoma cerrado en un anillo, el primer gen y el último quedan contiguos, y con dos cortes pueden acabar juntos en el mismo hijo; con uno solo, nunca. Syswerda (1989) lo compara con el cruce en un punto y con el uniforme.',
       'Si el primer corte está al principio del cromosoma o el segundo al final, el cruce en dos puntos se reduce a uno en un punto.',
+      C.integerNote.es,
       'Coste: cada hijo se construye con un solo recorrido, en tiempo O(n).',
     ],
     en: [
       'Two-point crossover chooses two cuts and the children swap the stretch between them: each child keeps its parent’s ends and receives the other’s middle. Its crossover mask is a block of ones surrounded by zeros.',
       'It removes the main bias of one-point crossover. If the chromosome is imagined closed into a ring, the first and last genes become neighbours, and with two cuts they can end up together in the same child; with a single cut, never. Syswerda (1989) compares it with one-point and uniform crossover.',
       'If the first cut is at the start of the chromosome or the second at the end, two-point crossover reduces to one-point crossover.',
+      C.integerNote.en,
       'Cost: each child is built in a single pass, in O(n) time.',
     ],
   };
@@ -140,10 +142,7 @@ if (typeof module !== 'undefined' && module.exports) {
       es: 'Presenta el algoritmo del cruce en dos puntos que usan las transparencias del curso.',
       en: 'Presents the two-point crossover algorithm used in the course slides.',
     }),
-    C.ref('eiben', {
-      es: 'Manual de referencia de computación evolutiva, con los operadores de cruce para representación binaria.',
-      en: 'Reference textbook on evolutionary computation, including crossover operators for binary representations.',
-    }),
+    C.ref('eiben', C.eibenNote),
     C.ref('talbi', {
       es: 'Manual de metaheurísticas. El apartado 3.3.2.2 (p. 214, fig. 3.16) presenta el cruce en n puntos, con el de dos puntos como ejemplo, como forma de reducir la disrupción del cruce en un punto.',
       en: 'Metaheuristics textbook. Section 3.3.2.2 (p. 214, fig. 3.16) presents n-point crossover, with two-point crossover as its example, as a way to reduce the disruption of one-point crossover.',
