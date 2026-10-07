@@ -1,5 +1,7 @@
 # Crossover in genetic algorithms
 
+Browse the series: [Genetic algorithms, step by step](https://josemagalan.github.io/genetic-algorithms-lab/?lang=en) — teaching tools for selection, crossover, mutation and evolutionary simulations.
+
 [![Live demo](https://img.shields.io/badge/Live_demo-GitHub_Pages-2ea44f?logo=github)](https://josemagalan.github.io/crossover-ga/)
 [![Tests](https://github.com/josemagalan/crossover-ga/actions/workflows/tests.yml/badge.svg)](https://github.com/josemagalan/crossover-ga/actions/workflows/tests.yml)
 [![Code: MIT](https://img.shields.io/badge/Code-MIT-yellow.svg)](LICENSE)

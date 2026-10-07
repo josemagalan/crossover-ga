@@ -7,6 +7,7 @@
 
   const dict = {
     es: {
+      portalHome: 'Herramientas de algoritmos genéticos',
       brand: 'Cruces en algoritmos genéticos',
       homeTitleDoc: 'Operadores de cruce · Algoritmos genéticos',
       opTitleDoc: '{name} · Algoritmos genéticos',
@@ -171,6 +172,7 @@
       metricDesc_distance: 'Distancia media de cada gen al padre más cercano, medida en anchuras I = |P1 − P2| del intervalo de los padres: 0 es una copia exacta y 0,5, el punto medio entre los dos.',
     },
     en: {
+      portalHome: 'Genetic algorithm tools',
       brand: 'Crossover in genetic algorithms',
       homeTitleDoc: 'Crossover operators · Genetic algorithms',
       opTitleDoc: '{name} · Genetic algorithms',

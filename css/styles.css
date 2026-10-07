@@ -928,3 +928,16 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; text
 .mq-feedback ul { margin: 6px 0; }
 .mq-how { margin: 0 0 10px; padding-left: 1.4em; line-height: 1.6; }
 @media (max-width: 600px) { .mq-items { flex-direction: column; } }
+
+/* Return to the shared genetic algorithm tools portal. */
+.topbar { flex-wrap: wrap; }
+.portal-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-left: auto; color: var(--muted); text-decoration: none;
+  font-size: 0.8rem; font-weight: 600;
+}
+.portal-link:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.portal-link:focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }
+@media (max-width: 760px) {
+  .portal-link { order: 3; flex-basis: 100%; margin-left: 0; }
+}

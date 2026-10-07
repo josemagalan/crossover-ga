@@ -783,6 +783,8 @@
   function applyLanguage() {
     document.documentElement.lang = state.lang;
     document.querySelectorAll('[data-i18n]').forEach((node) => { node.textContent = t(node.dataset.i18n); });
+    const portalLink = document.getElementById('portalLink');
+    if (portalLink) portalLink.href = 'https://josemagalan.github.io/genetic-algorithms-lab/?lang=' + state.lang;
     document.querySelectorAll('[data-i18n-aria]').forEach((node) => node.setAttribute('aria-label', t(node.dataset.i18nAria)));
     document.querySelectorAll('[data-i18n-title]').forEach((node) => {
       node.title = t(node.dataset.i18nTitle);
