@@ -5,6 +5,7 @@
   'use strict';
 
   const REPO = 'https://github.com/josemagalan/crossover-ga';
+  const SELECTION = 'https://josemagalan.github.io/selection-ga/';
   const SISTER = 'https://josemagalan.github.io/mutation-ga/';
 
   const authors = [
@@ -34,8 +35,10 @@
       lead: 'Herramienta docente interactiva para ver paso a paso los operadores de cruce de los algoritmos genéticos, clasificados por el tipo de representación (binaria, real y permutacional), con su explicación, pseudocódigo, código descargable y referencias.',
       authorsTitle: 'Autores',
       group: 'Todos los autores forman parte del grupo de investigación Los Goonies (Group of Organization and Industrial Engineering and Simulation).',
-      sisterTitle: 'Herramienta hermana',
+      sisterTitle: 'Herramientas hermanas',
       sister: 'Esta herramienta acompaña a «Mutación en algoritmos genéticos», de los mismos autores, que muestra con el mismo enfoque los operadores de mutación de cada representación (binaria, entera, real y permutacional).',
+      sisterSelection: '«Selección en algoritmos genéticos», la tercera herramienta de la serie, muestra cómo se eligen los padres (ruleta, SUS, ranking, torneo…) y quién sobrevive en el reemplazo. Juntas cubren los tres operadores de un algoritmo genético: selección, cruce y mutación.',
+      sisterLinkSelection: 'Abrir «Selección en algoritmos genéticos»',
       sisterLink: 'Abrir «Mutación en algoritmos genéticos»',
       citeTitle: 'Cómo citar',
       cite: 'Estamos preparando un artículo sobre esta herramienta para el Congreso de Ingeniería de Organización. Mientras tanto, si quieres citarla, ponte en contacto con los autores.',
@@ -46,7 +49,9 @@
       thanks: 'Agradecemos al programa Claude for Science de Anthropic su apoyo al desarrollo de esta herramienta, que se ha realizado con la ayuda de Claude.',
       foot: 'Acerca de',
       footMoodle: 'Preguntas para Moodle',
-      footSister: 'Herramienta hermana: mutación',
+      footSister: 'Herramientas hermanas:',
+      footOther: 'mutación',
+      footSelection: 'selección',
       footLicence: 'Código MIT · Textos CC BY 4.0',
     },
     en: {
@@ -54,8 +59,10 @@
       lead: 'Interactive teaching tool to follow, step by step, the crossover operators of genetic algorithms, grouped by representation type (binary, real-valued and permutation), with explanations, pseudocode, downloadable code and references.',
       authorsTitle: 'Authors',
       group: 'All authors are members of the Los Goonies research group (Group of Organization and Industrial Engineering and Simulation).',
-      sisterTitle: 'Sister tool',
+      sisterTitle: 'Sister tools',
       sister: 'This tool accompanies “Mutation in genetic algorithms”, by the same authors, which shows the mutation operators for each representation (binary, integer, real-valued and permutation) with the same approach.',
+      sisterSelection: '“Selection in genetic algorithms”, the third tool of the series, shows how parents are chosen (roulette wheel, SUS, ranking, tournament…) and who survives in replacement. Together they cover the three operators of a genetic algorithm: selection, crossover and mutation.',
+      sisterLinkSelection: 'Open “Selection in genetic algorithms”',
       sisterLink: 'Open “Mutation in genetic algorithms”',
       citeTitle: 'How to cite',
       cite: 'We are preparing a paper on this tool for the Congreso de Ingeniería de Organización (Spanish conference on industrial management and engineering). In the meantime, if you would like to cite it, please contact the authors.',
@@ -66,7 +73,9 @@
       thanks: 'We thank Anthropic’s Claude for Science programme for supporting the development of this tool, which was built with the help of Claude.',
       foot: 'About',
       footMoodle: 'Moodle questions',
-      footSister: 'Sister tool: mutation',
+      footSister: 'Sister tools:',
+      footOther: 'mutation',
+      footSelection: 'selection',
       footLicence: 'Code MIT · Texts CC BY 4.0',
     },
   };
@@ -131,14 +140,20 @@
       node('p', 'lead', T.lead),
       section(T.authorsTitle, authorLine(true), affs, node('p', null, T.group)),
       logoRow('about-logos'),
-      section(T.sisterTitle, (() => {
+      section(T.sisterTitle, ...(() => {
         const p = node('p', null, `${T.sister} `);
         const s = node('a', null, T.sisterLink);
         s.href = sisterUrl(lang);
         s.target = '_blank';
         s.rel = 'noopener';
         p.append(s, document.createTextNode('.'));
-        return p;
+        const p2 = node('p', null, `${T.sisterSelection} `);
+        const s2 = node('a', null, T.sisterLinkSelection);
+        s2.href = sisterUrl(lang, 'selection');
+        s2.target = '_blank';
+        s2.rel = 'noopener';
+        p2.append(s2, document.createTextNode('.'));
+        return [p, p2];
       })()),
       section(T.citeTitle, node('p', null, T.cite)),
       section(T.codeTitle, codeP),
@@ -146,7 +161,7 @@
     );
   }
 
-  function sisterUrl(lang) { return `${SISTER}#lang=${lang}`; }
+  function sisterUrl(lang, which) { return `${which === 'selection' ? SELECTION : SISTER}#lang=${lang}`; }
 
   function renderFooter(container, lang) {
     const T = text[lang] || text.es;
@@ -159,9 +174,11 @@
     gh.href = REPO;
     const moodle = node('a', null, T.footMoodle);
     moodle.href = `#page=moodle&lang=${lang}`;
-    const sister = node('a', null, T.footSister);
+    const sister = node('a', null, T.footOther);
     sister.href = sisterUrl(lang);
-    links.append(about, document.createTextNode(' · '), moodle, document.createTextNode(' · '), sister, document.createTextNode(' · '), gh, document.createTextNode(` · ${T.footLicence}`));
+    const selection = node('a', null, T.footSelection);
+    selection.href = sisterUrl(lang, 'selection');
+    links.append(about, document.createTextNode(' · '), moodle, document.createTextNode(` · ${T.footSister} `), sister, document.createTextNode(', '), selection, document.createTextNode(' · '), gh, document.createTextNode(` · ${T.footLicence}`));
     info.append(links);
     container.replaceChildren(logoRow('site-foot-logos'), info);
   }

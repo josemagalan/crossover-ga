@@ -8,6 +8,7 @@
 [![Languages: ES | EN](https://img.shields.io/badge/Languages-ES_%7C_EN-blue.svg)](#features)
 [![Purpose: Teaching tool](https://img.shields.io/badge/Purpose-Teaching_tool-informational.svg)](#pedagogical-purpose)
 [![Sister tool: mutation-ga](https://img.shields.io/badge/Sister_tool-mutation--ga-8a2be2?logo=github)](https://github.com/josemagalan/mutation-ga)
+[![Sister tool: selection-ga](https://img.shields.io/badge/Sister_tool-selection--ga-8a2be2?logo=github)](https://github.com/josemagalan/selection-ga)
 
 **José Manuel Galán**¹ · **Silvia Díaz-de la Fuente**² · **Virginia Ahedo**¹ · **María Pereda**³ · **José Ignacio Santos**¹
 
@@ -20,7 +21,7 @@ All authors are members of the Los Goonies research group (Group of Organization
 
 Crossover is how a genetic algorithm combines the information of two parents to create children, and how it has to be done depends on how each solution is represented: an operator designed for bit strings can produce invalid solutions when the chromosome is a permutation. This interactive tool shows, step by step and in Spanish or English, how the classic crossover operators work for binary, real-valued and permutation representations, and lets students practise predicting the children and compare what each operator preserves from the parents.
 
-It is the sister tool of [Mutation in genetic algorithms](https://github.com/josemagalan/mutation-ga), with the same approach and features. It runs entirely in the browser, with no build step and no server: open `index.html` or use the [live demo](https://josemagalan.github.io/crossover-ga/).
+It is the sister tool of [Mutation in genetic algorithms](https://github.com/josemagalan/mutation-ga), with the same approach and features, and the series is completed by [Selection in genetic algorithms](https://github.com/josemagalan/selection-ga). It runs entirely in the browser, with no build step and no server: open `index.html` or use the [live demo](https://josemagalan.github.io/crossover-ga/).
 
 ## Implemented operators
 
@@ -81,6 +82,7 @@ The tests check every operator (worked examples, thousands of random cases contr
 ## Related tools
 
 - [Mutation in genetic algorithms](https://github.com/josemagalan/mutation-ga) ([live demo](https://josemagalan.github.io/mutation-ga/)): the companion tool on mutation operators by representation (binary, integer, real-valued and permutation), by the same authors and with the same interface, practice mode, comparison screen and Moodle question banks. Used together, the two tools cover the variation operators of a genetic algorithm.
+- [Selection in genetic algorithms](https://github.com/josemagalan/selection-ga) ([live demo](https://josemagalan.github.io/selection-ga/)): the third tool of the series, on parent selection (roulette wheel, SUS, ranking, tournament, truncation…) and replacement (elitism, steady state, (μ + λ), (μ, λ)), by the same authors and with the same interface. Together, the three tools cover the operators of a genetic algorithm.
 
 ## How to cite
 
