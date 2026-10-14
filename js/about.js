@@ -6,6 +6,11 @@
 
   const REPO = 'https://github.com/josemagalan/crossover-ga';
   const SELECTION = 'https://josemagalan.github.io/selection-ga/';
+  // Las dos herramientas que abren la serie, antes de los operadores
+  const SERIES = {
+    representation: 'https://josemagalan.github.io/representation-ga/',
+    initialization: 'https://josemagalan.github.io/initialization-and-evaluation-ga/',
+  };
   const SISTER = 'https://josemagalan.github.io/mutation-ga/';
 
   const authors = [
@@ -49,7 +54,12 @@
       thanks: 'Agradecemos al programa Claude for Science de Anthropic su apoyo al desarrollo de esta herramienta, que se ha realizado con la ayuda de Claude.',
       foot: 'Acerca de',
       footMoodle: 'Preguntas para Moodle',
+      sisterSeries: 'Antes de los operadores, la serie empieza por «Representación en algoritmos genéticos», que muestra cómo se codifican las soluciones, y por «Inicialización y evaluación en algoritmos genéticos», que muestra cómo se crea la población inicial y cómo se calcula su aptitud.',
+      sisterLinkRepresentation: 'Abrir «Representación en algoritmos genéticos»',
+      sisterLinkInitialization: 'Abrir «Inicialización y evaluación en algoritmos genéticos»',
       footSister: 'Herramientas hermanas:',
+      footRepresentation: 'representación',
+      footInitialization: 'inicialización y evaluación',
       footOther: 'mutación',
       footSelection: 'selección',
       footLicence: 'Código MIT · Textos CC BY 4.0',
@@ -73,7 +83,12 @@
       thanks: 'We thank Anthropic’s Claude for Science programme for supporting the development of this tool, which was built with the help of Claude.',
       foot: 'About',
       footMoodle: 'Moodle questions',
+      sisterSeries: 'Before the operators, the series starts with “Representation in genetic algorithms”, which shows how solutions are encoded, and “Initialisation and evaluation in genetic algorithms”, which shows how the initial population is created and how its fitness is computed.',
+      sisterLinkRepresentation: 'Open “Representation in genetic algorithms”',
+      sisterLinkInitialization: 'Open “Initialisation and evaluation in genetic algorithms”',
       footSister: 'Sister tools:',
+      footRepresentation: 'representation',
+      footInitialization: 'initialisation and evaluation',
       footOther: 'mutation',
       footSelection: 'selection',
       footLicence: 'Code MIT · Texts CC BY 4.0',
@@ -153,7 +168,17 @@
         s2.target = '_blank';
         s2.rel = 'noopener';
         p2.append(s2, document.createTextNode('.'));
-        return [p, p2];
+        const p3 = node('p', null, `${T.sisterSeries} `);
+        [['representation', T.sisterLinkRepresentation], ['initialization', T.sisterLinkInitialization]].forEach(([k, txt], i) => {
+          const s3 = node('a', null, txt);
+          s3.href = sisterUrl(lang, k);
+          s3.target = '_blank';
+          s3.rel = 'noopener';
+          if (i) p3.append(document.createTextNode(' · '));
+          p3.append(s3);
+        });
+        p3.append(document.createTextNode('.'));
+        return [p, p2, p3];
       })()),
       section(T.citeTitle, node('p', null, T.cite)),
       section(T.codeTitle, codeP),
@@ -161,7 +186,7 @@
     );
   }
 
-  function sisterUrl(lang, which) { return `${which === 'selection' ? SELECTION : SISTER}#lang=${lang}`; }
+  function sisterUrl(lang, which) { return `${which === 'selection' ? SELECTION : SERIES[which] || SISTER}#lang=${lang}`; }
 
   function renderFooter(container, lang) {
     const T = text[lang] || text.es;
@@ -178,7 +203,12 @@
     sister.href = sisterUrl(lang);
     const selection = node('a', null, T.footSelection);
     selection.href = sisterUrl(lang, 'selection');
-    links.append(about, document.createTextNode(' · '), moodle, document.createTextNode(` · ${T.footSister} `), sister, document.createTextNode(', '), selection, document.createTextNode(' · '), gh, document.createTextNode(` · ${T.footLicence}`));
+    const representation = node('a', null, T.footRepresentation);
+    representation.href = sisterUrl(lang, 'representation');
+    const initialization = node('a', null, T.footInitialization);
+    initialization.href = sisterUrl(lang, 'initialization');
+    // En el orden del algoritmo: representar, inicializar y evaluar, seleccionar y el otro operador de variación
+    links.append(about, document.createTextNode(' · '), moodle, document.createTextNode(` · ${T.footSister} `), representation, document.createTextNode(', '), initialization, document.createTextNode(', '), selection, document.createTextNode(', '), sister, document.createTextNode(' · '), gh, document.createTextNode(` · ${T.footLicence}`));
     info.append(links);
     container.replaceChildren(logoRow('site-foot-logos'), info);
   }
