@@ -1,6 +1,6 @@
 # Crossover in genetic algorithms
 
-Browse the series: [Genetic algorithms, step by step](https://josemagalan.github.io/genetic-algorithms-lab/?lang=en) — five interactive modules, two simulators and a learning handbook.
+Browse the series: [Genetic Algorithms Lab](https://josemagalan.github.io/genetic-algorithms-lab/?lang=en) — five interactive modules, two simulators and a book, *Evolución a la vista* (in Spanish).
 
 [![Live demo](https://img.shields.io/badge/Live_demo-GitHub_Pages-2ea44f?logo=github)](https://josemagalan.github.io/crossover-ga/)
 [![Tests](https://github.com/josemagalan/crossover-ga/actions/workflows/tests.yml/badge.svg)](https://github.com/josemagalan/crossover-ga/actions/workflows/tests.yml)
@@ -86,7 +86,7 @@ The tests check every operator (worked examples, thousands of random cases contr
 
 | Resource / Recurso | Use or read / Usar o leer | Repository / Repositorio |
 | --- | --- | --- |
-| Portal / Índice de materiales | [Open / Abrir](https://josemagalan.github.io/genetic-algorithms-lab/) | [GitHub](https://github.com/josemagalan/genetic-algorithms-lab) |
+| Portal: Genetic Algorithms Lab / Laboratorio de algoritmos genéticos | [Open / Abrir](https://josemagalan.github.io/genetic-algorithms-lab/) | [GitHub](https://github.com/josemagalan/genetic-algorithms-lab) |
 | Representation / Representación | [Open / Abrir](https://josemagalan.github.io/representation-ga/) | [GitHub](https://github.com/josemagalan/representation-ga) |
 | Initialisation and evaluation / Inicialización y evaluación | [Open / Abrir](https://josemagalan.github.io/initialization-and-evaluation-ga/) | [GitHub](https://github.com/josemagalan/initialization-and-evaluation-ga) |
 | Selection / Selección | [Open / Abrir](https://josemagalan.github.io/selection-ga/) | [GitHub](https://github.com/josemagalan/selection-ga) |
@@ -94,9 +94,9 @@ The tests check every operator (worked examples, thousands of random cases contr
 | Mutation / Mutación | [Open / Abrir](https://josemagalan.github.io/mutation-ga/) | [GitHub](https://github.com/josemagalan/mutation-ga) |
 | EvoTraveller | [Open / Abrir](https://evotraveller.streamlit.app/) | [GitHub](https://github.com/jismartin/evotraveller) |
 | SelectionMechanisms | [Open / Abrir](https://josemagalan.shinyapps.io/SelectionMechanisms/) | [GitHub](https://github.com/josemagalan/SelectionMechanisms) |
-| Learning handbook / Manual de aprendizaje | [Read / Leer](https://josemagalan.github.io/genetic-algorithms-lab-book/) | [GitHub](https://github.com/josemagalan/genetic-algorithms-lab-book) |
+| Book / Libro: *Evolución a la vista* | [Read / Leer](https://josemagalan.github.io/genetic-algorithms-lab-book/) | [GitHub](https://github.com/josemagalan/genetic-algorithms-lab-book) |
 
-El manual está en construcción: su contenido y estructura pueden cambiar. / The handbook is a work in progress: its content and structure may change.
+El libro está en construcción: su contenido y estructura pueden cambiar. / The book, in Spanish, is a work in progress: its content and structure may change.
 <!-- ga-series-links:end -->
 
 - [Mutation in genetic algorithms](https://github.com/josemagalan/mutation-ga) ([live demo](https://josemagalan.github.io/mutation-ga/)): the companion tool on mutation operators by representation (binary, integer, real-valued and permutation), by the same authors and with the same interface, practice mode, comparison screen and Moodle question banks. Used together, the two tools cover the variation operators of a genetic algorithm.
