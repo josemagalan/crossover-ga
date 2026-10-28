@@ -342,6 +342,20 @@ if (typeof module !== 'undefined' && module.exports) {
         en: 'Spanish-language textbook on metaheuristics applied to industrial engineering problems. PMX is covered in section 8.3.4 (p. 189), and the travelling salesman problem in section 2.2.',
       },
     },
+    {
+      id: 'cicirello-2023',
+      type: 'inproceedings',
+      authors: 'Cicirello, V. A.',
+      year: '2023',
+      title: 'A survey and analysis of evolutionary operators for permutations',
+      container: 'Proceedings of the 15th International Joint Conference on Computational Intelligence (IJCCI 2023): ECTA',
+      details: { es: '(pp. 288–299). SciTePress', en: '(pp. 288–299). SciTePress' },
+      url: 'https://doi.org/10.5220/0012204900003595',
+      note: {
+        es: 'Revisión de los cruces de permutación con un análisis experimental por rasgos: PMX resulta eficaz cuando importan las posiciones y las precedencias.',
+        en: 'Review of permutation crossovers with an experimental analysis by feature: PMX is effective when positions and precedences matter.',
+      },
+    },
   ];
 
   function getCode(kind, lang) {

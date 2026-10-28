@@ -10,14 +10,14 @@
       'OX (Order Crossover) procede del «modified crossover» que Davis (1985) propuso para problemas de empaquetado: conservar la primera parte de una lista y ordenar el resto de sus elementos según el orden en que aparecen en otra lista. La versión con dos cortes es la que describe después Goldberg (1989), y Oliver, Smith y Holland (1987) la comparan con PMX y CX en el problema del viajante.',
       'Cada hijo copia el segmento de uno de los padres en las mismas posiciones. El resto de genes sale del otro padre, pero no de sus posiciones: se recorren en el orden en que aparecen en él, se saltan los que ya están en el segmento y se van colocando en los huecos. Así el hijo nunca repite genes y no hace falta ninguna tabla de correspondencias.',
       'Por eso OX conserva sobre todo el orden relativo de los genes, no su posición absoluta: lo que el hijo hereda del segundo padre es qué genes van antes que otros. Encaja con problemas en los que importa la secuencia, como la programación de tareas o las rutas. PMX, en cambio, tiende a conservar posiciones absolutas.',
-      'Las variantes difieren en dos detalles: desde dónde se lee el otro padre y por qué hueco se empieza a rellenar. La variante por defecto es la de las transparencias del curso, basadas en los apuntes de Algorítmica de la Universidad de Granada: se lee el otro padre desde el principio y se rellena a partir del segundo corte, dando la vuelta. En la clásica que describe Goldberg también se empieza a leer tras el segundo corte, y en la de izquierda a derecha se rellenan los huecos en orden. Con el selector de variante puedes compararlas con los mismos padres.',
+      'Las variantes difieren en dos detalles: desde dónde se lee el otro padre y por qué hueco se empieza a rellenar. La variante por defecto es la de las transparencias del curso, basadas en los apuntes de Algorítmica de la Universidad de Granada: se lee el otro padre desde el principio y se rellena a partir del segundo corte, dando la vuelta. En la clásica que describe Goldberg también se empieza a leer tras el segundo corte, y en la de izquierda a derecha se rellenan los huecos en orden. Esta última es el NWOX de Cicirello (2006). Cicirello (2023), por su parte, explica OX con la variante por defecto. Con el selector de variante puedes compararlas con los mismos padres.',
       'Coste: guardando en un conjunto los genes del segmento, cada hijo se construye con un solo recorrido del otro padre, en tiempo O(n).',
     ],
     en: [
       'OX (Order Crossover) derives from the “modified crossover” that Davis (1985) proposed for packing problems: keep the first part of a list and order the rest of its elements as they appear in another list. The two-cut version is the one later described by Goldberg (1989), and Oliver, Smith and Holland (1987) compare it with PMX and CX on the travelling salesman problem.',
       'Each child copies the segment of one parent in the same positions. The remaining genes come from the other parent, but not from their positions: they are visited in the order in which they appear in it, those already in the segment are skipped, and the rest are placed into the gaps. The child therefore never repeats genes and no mapping table is needed.',
       'This is why OX mainly preserves the relative order of genes rather than their absolute position: what the child inherits from the second parent is which genes come before others. It suits problems where the sequence matters, such as task scheduling or routing. PMX, by contrast, tends to preserve absolute positions.',
-      'The variants differ in two details: where the other parent is read from and which gap is filled first. The default variant is the one in the course slides, based on the Algorithmics notes of the University of Granada: the other parent is read from the start and the gaps are filled from the second cut, wrapping around. In the classic version described by Goldberg, reading also starts after the second cut, and in the left-to-right version the gaps are filled in order. Use the variant selector to compare them with the same parents.',
+      'The variants differ in two details: where the other parent is read from and which gap is filled first. The default variant is the one in the course slides, based on the Algorithmics notes of the University of Granada: the other parent is read from the start and the gaps are filled from the second cut, wrapping around. In the classic version described by Goldberg, reading also starts after the second cut, and in the left-to-right version the gaps are filled in order. The latter is Cicirello’s (2006) NWOX. Cicirello (2023), for his part, explains OX with the default variant. Use the variant selector to compare them with the same parents.',
       'Cost: storing the segment genes in a set, each child is built with a single pass over the other parent, in O(n) time.',
     ],
   };
@@ -38,10 +38,10 @@
       },
     },
     left_to_right: {
-      name: { es: 'De izquierda a derecha', en: 'Left to right' },
+      name: { es: 'De izquierda a derecha (NWOX, Cicirello, 2006)', en: 'Left to right (NWOX, Cicirello, 2006)' },
       desc: {
-        es: 'Se lee el otro padre desde el principio y los huecos se rellenan de izquierda a derecha.',
-        en: 'The other parent is read from the start and the gaps are filled from left to right.',
+        es: 'Se lee el otro padre desde el principio y los huecos se rellenan de izquierda a derecha. Es el cruce NWOX (non-wrapping order crossover) de Cicirello (2006): como no da la vuelta, respeta mejor qué gen va antes que otro.',
+        en: 'The other parent is read from the start and the gaps are filled from left to right. This is Cicirello’s (2006) NWOX (non-wrapping order crossover): since it does not wrap around, it better respects which gene comes before another.',
       },
     },
   };
@@ -347,6 +347,20 @@ if (typeof module !== 'undefined' && module.exports) {
       note: {
         es: 'Manual en español de metaheurísticas aplicadas a problemas de ingeniería de organización industrial. OX («cruzamiento por orden de genes») se trata en el apartado 8.3.3 (p. 188), y el problema del viajante, en el 2.2.',
         en: 'Spanish-language textbook on metaheuristics applied to industrial engineering problems. OX is covered in section 8.3.3 (p. 188), and the travelling salesman problem in section 2.2.',
+      },
+    },
+    {
+      id: 'cicirello-2023',
+      type: 'inproceedings',
+      authors: 'Cicirello, V. A.',
+      year: '2023',
+      title: 'A survey and analysis of evolutionary operators for permutations',
+      container: 'Proceedings of the 15th International Joint Conference on Computational Intelligence (IJCCI 2023): ECTA',
+      details: { es: '(pp. 288–299). SciTePress', en: '(pp. 288–299). SciTePress' },
+      url: 'https://doi.org/10.5220/0012204900003595',
+      note: {
+        es: 'Revisión de los cruces y mutaciones de permutación, con un análisis experimental por rasgos. Explica OX leyendo el otro padre desde el principio (la variante por defecto de esta herramienta) y describe NWOX (la variante «De izquierda a derecha»). OX resulta eficaz cuando importan las aristas, pero no cuando importan las precedencias; NWOX, cuando importan las precedencias.',
+        en: 'Review of permutation crossover and mutation operators, with an experimental analysis by feature. It explains OX reading the other parent from the start (this tool’s default variant) and describes NWOX (the “Left to right” variant). OX is effective when edges matter but not when precedences do; NWOX, when precedences matter.',
       },
     },
   ];

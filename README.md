@@ -29,7 +29,7 @@ This tool is part of the five-module series on representation, initialisation an
 | --- | --- |
 | Binary | One-point, two-point, n-point (k cuts) and uniform (probability p), all explained through Syswerda’s crossover mask |
 | Real-valued | Uniform, arithmetic (weight λ), BLX-α (α) and SBX (η); BLX-α and SBX with an extra 2D view of the parents, a cloud of other possible children and the children of the trace |
-| Permutation | PMX, OX (three variants), CX (three variants) and ERX (two variants, with its adjacency table), plus a counterexample showing why one-point crossover fails on permutations |
+| Permutation | PMX, OX (three variants, one of them Cicirello’s NWOX), CX (three variants) and ERX (two variants, with its adjacency table), plus a counterexample showing why one-point crossover fails on permutations |
 
 There is no separate integer section: integer vectors use the binary crossovers unchanged (one-point, two-point, n-point and uniform), because these only cut and recombine positions without looking at the gene values (Eiben & Smith, *Introduction to Evolutionary Computing*). Integer-specific operators are needed for mutation, which the sister tool covers.
 

@@ -350,6 +350,20 @@ if (typeof module !== 'undefined' && module.exports) {
         en: 'Review of representations and operators for the travelling salesman problem; describes ERX and compares it with PMX, OX, CX and others.',
       },
     },
+    {
+      id: 'cicirello-2023',
+      type: 'inproceedings',
+      authors: 'Cicirello, V. A.',
+      year: '2023',
+      title: 'A survey and analysis of evolutionary operators for permutations',
+      container: 'Proceedings of the 15th International Joint Conference on Computational Intelligence (IJCCI 2023): ECTA',
+      details: { es: '(pp. 288–299). SciTePress', en: '(pp. 288–299). SciTePress' },
+      url: 'https://doi.org/10.5220/0012204900003595',
+      note: {
+        es: 'Revisión de los cruces de permutación con un análisis experimental por rasgos. Describe ERX y su versión mejorada (Starkweather et al., 1991), las dos eficaces cuando importan las aristas sin sentido, como en el viajante simétrico.',
+        en: 'Review of permutation crossovers with an experimental analysis by feature. It describes ERX and its enhanced version (Starkweather et al., 1991), both effective when undirected edges matter, as in the symmetric travelling salesman problem.',
+      },
+    },
   ];
 
   function getCode(kind, lang) {
