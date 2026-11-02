@@ -177,7 +177,7 @@
     },
     en: {
       portalHome: 'Genetic Algorithms Lab',
-      bookChapter: 'Book · chapter 6 (Spanish)',
+      bookChapter: 'Book · chapter 6',
       brand: 'Crossover in genetic algorithms',
       homeTitleDoc: 'Crossover operators · Genetic algorithms',
       opTitleDoc: '{name} · Genetic algorithms',
