@@ -9,6 +9,7 @@
     es: {
       portalHome: 'Laboratorio de algoritmos genéticos',
       bookChapter: 'Libro · capítulo 6',
+      controlsTitle: 'Controles',
       brand: 'Cruces en algoritmos genéticos',
       homeTitleDoc: 'Operadores de cruce · Algoritmos genéticos',
       opTitleDoc: '{name} · Algoritmos genéticos',
@@ -178,6 +179,7 @@
     en: {
       portalHome: 'Genetic Algorithms Lab',
       bookChapter: 'Book · chapter 6',
+      controlsTitle: 'Controls',
       brand: 'Crossover in genetic algorithms',
       homeTitleDoc: 'Crossover operators · Genetic algorithms',
       opTitleDoc: '{name} · Genetic algorithms',
